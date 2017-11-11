@@ -1,0 +1,130 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial';
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+.page-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  border: 10px solid black;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.page-container header {
+  font-size: x-large;
+  padding: 5px;
+  border-bottom: 6px solid black;
+}
+
+.page-content-container {
+  display: flex;
+  flex-flow: row nowrap;
+  flex-grow: 1;
+}
+
+.page-content {
+  padding: 5px;
+}
+
+.page-content-left {
+  width: 20%;
+  border-right: 6px solid black;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.page-content-middle {
+  width: 50%;
+  border-right: 6px solid black;
+}
+
+.page-content-right {
+  width: 30%;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.inventory-item {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.inventory-item-name {
+  flex-grow: 1;
+}
+
+.logs-container {
+  overflow: auto;
+  height: 100%;
+}
+
+.log {
+  animation: fadeIn 1s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tab {
+  cursor: pointer;
+  color: dimgrey;
+}
+
+.tab:hover {
+  text-decoration: underline;
+}
+
+.tabs {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.content {
+  display: flex;
+  flex-flow: row wrap;
+  padding-top: 5px;
+}
+
+.action {
+  padding: 5px;
+  border: 2px solid black;
+  margin-right: 8px;
+  cursor: pointer;
+  background: white;
+  box-shadow: 2px 2px black;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.action:hover {
+  text-decoration: underline;
+  filter: brightness(80%);
+}
+
+.action:active {
+  filter: brightness(65%);
+}
+
+.tooltip {
+  background-color: white;
+  border: 2px solid black;
+  z-index: 2;
+  display: none;
+  padding: 5px;
+  box-shadow: 2px 2px black;
+}
