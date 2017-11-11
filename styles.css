@@ -103,6 +103,7 @@ html, body {
   padding: 5px;
   border: 2px solid black;
   margin-right: 8px;
+  margin-bottom: 8px;
   cursor: pointer;
   background: white;
   box-shadow: 2px 2px black;
@@ -127,4 +128,28 @@ html, body {
   display: none;
   padding: 5px;
   box-shadow: 2px 2px black;
+}
+
+.mining-drills-container {
+  padding-top: 5px;
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.mining-drills-left {
+  flex-grow: 1;
+}
+
+.mining-resource-container {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.mining-resource-container button {
+  background: transparent;
+  border: 1px solid black;
+  border-radius: 0px;
+  width: 15px;
+  margin: 0 5px;
+  cursor: pointer;
 }

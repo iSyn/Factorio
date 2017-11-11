@@ -11,12 +11,22 @@ Game.launch = () => {
     maxAmount: 100,
 
     worldResources: [
-      {name: 'WOOD', amount: 600, locked: 0},
-      {name: 'STONE', amount: 500, locked: 0},
-      {name: 'COAL', amount: 50, locked: 1},
-      {name: 'COPPER', amount: 50, locked: 1},
-      {name: 'IRON', amount: 50, locked: 1},
+      {name: 'WOOD', amount: 200, locked: 0},
+      {name: 'STONE', amount: 200, locked: 0},
+      {name: 'COAL', amount: 0, locked: 1},
+      {name: 'COPPER', amount: 0, locked: 1},
+      {name: 'IRON', amount: 0, locked: 1},
     ],
+
+    miningDrills: {
+      owned: 0,
+      active: 0,
+      inactive: 0,
+      STONE: 0,
+      COAL: 0,
+      COPPER: 0,
+      IRON: 0
+    },
 
     selectedTab: 'GATHER',
     tabs: [
@@ -28,8 +38,7 @@ Game.launch = () => {
     stats: {
       overallTotalStone: 0,
       overallTotalWood: 0,
-      chestsOwned: 1,
-      miningDrillsOwned: 1
+      chestsOwned: 0,
     }
   }
 
@@ -37,7 +46,6 @@ Game.launch = () => {
 
     setTimeout(() => {Game.addLog('story', 'You have just crash landed on an alien planet.')}, 1000)
     setTimeout(() => {Game.addLog('story', 'Your goal is to build a rocket ship and escape.')}, 3000)
-
 
     Game.rebuildTabs = 1
     Game.rebuildSelectedTab = 1
@@ -94,14 +102,14 @@ Game.launch = () => {
 
     if (type == 'build-chest') {
       tooltip.innerHTML = `
-        <p>Cost: ${Game.state.stats.chestsOwned * 50} wood, ${Game.state.stats.chestsOwned * 10} stone</p>
+        <p>Cost: 50 wood, 10 stone</p>
         <p>Increase max storage by 100</p>
       `
     }
 
     if (type == 'build-mining-drill') {
       tooltip.innerHTML = `
-        <p>Cost: ${Game.state.stats.miningDrillOwned * 100} wood, ${Game.state.stats.miningDrillOwned * 100} stone</p>
+        <p>Cost: 100 wood, 100 stone</p>
         <p>Allows for automation</p>
       `
     }
@@ -185,6 +193,66 @@ Game.launch = () => {
     Game.rebuildSelectedTab = 1
   }
 
+  Game.buildDrills = () => {
+    let str = `
+      <br/>
+      <h3>DRILLS</h3>
+      <hr/>
+      <div class="mining-drills-container">
+        <div class="mining-drills-left">
+        `
+        for (i in Game.state.worldResources) {
+          if (!Game.state.worldResources[i].locked) {
+            if (Game.state.worldResources[i].name != 'WOOD') {
+              let name = Game.state.worldResources[i].name
+
+              str += `
+                <div class="mining-resource-container">
+                  <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
+                  <button onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button>
+                  <p class="${Game.state.worldResources[i].name}-drills">${Game.state.miningDrills[name]}</p>
+                  <button onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>
+                </div>
+              `
+
+            }
+          }
+        }
+
+        str += `
+        </div>
+        <div class="mining-drills-right">
+          <p>DRILLS OWNED: ${Game.state.miningDrills.owned}</p>
+          <p>ACTIVE DRILLS: ${Game.state.miningDrills.active}</p>
+          <p>INACTIVE DRILLS: ${Game.state.miningDrills.inactive}</p>
+        </div>
+      </div>
+    `
+    return str
+  }
+
+  Game.addDrill = (type) => {
+    if (Game.state.miningDrills.inactive > 0) {
+      Game.state.miningDrills.inactive--
+      Game.state.miningDrills.active++
+
+      Game.state.miningDrills[type]++
+
+      Game.rebuildSelectedTab = 1
+    }
+  }
+
+  Game.removeDrill = (type) => {
+    if (Game.state.miningDrills.active > 0) {
+      Game.state.miningDrills.active--
+      Game.state.miningDrills.inactive++
+
+      Game.state.miningDrills[type]--
+
+      Game.rebuildSelectedTab = 1
+    }
+  }
+
   Game.buildSelectedTab = () => {
     let selectedTab = Game.state.selectedTab
     let str = ''
@@ -194,9 +262,16 @@ Game.launch = () => {
         <div class="content">
           <div class='action' onmouseover='Game.showTooltip("chop-tree")' onmouseout='Game.hideTooltip()' onclick='Game.chopTree()'>CHOP TREE</div>
           <div class='action' onmouseover='Game.showTooltip("mine-stone")' onmouseout='Game.hideTooltip()' onclick='Game.mineRock()'>MINE ROCK</div>
-          <div class='action' onmouseover='Game.showTooltip("explore")' onmouseout='Game.hideTooltip()'>EXPLORE</div>
+          <div class='action' onmouseover='Game.showTooltip("explore")' onmouseout='Game.hideTooltip()' onclick='Game.explore()'>EXPLORE</div>
         </div>
       `
+
+      if (Game.state.miningDrills.owned > 0) {
+        str += Game.buildDrills()
+      }
+
+
+
     }
 
     if (selectedTab == 'BUILD') {
@@ -213,6 +288,10 @@ Game.launch = () => {
     s('.tab-content').innerHTML = str
 
     Game.rebuildSelectedTab = 0
+  }
+
+  Game.explore = () => {
+    Game.addLog(null, 'You explore your surroundings but found nothing notable.')
   }
 
   Game.chopTree = () => {
@@ -242,28 +321,30 @@ Game.launch = () => {
   }
 
   Game.buildChest = () => {
-    if (Game.state.wood < (Game.state.stats.chestsOwned * 50)) Game.addLog('invalid', "You don't have enough wood")
-    if (Game.state.stone < (Game.state.stats.chestsOwned * 10)) Game.addLog('invalid', "You don't have enough stone")
+    if (Game.state.wood < 50) Game.addLog('invalid', "You don't have enough wood")
+    if (Game.state.stone < 10) Game.addLog('invalid', "You don't have enough stone")
 
-    if (Game.state.wood >= (Game.state.stats.chestsOwned * 50) && Game.state.stone >= (Game.state.stats.chestsOwned * 10)) {
+    if (Game.state.wood >= 50 && Game.state.stone >= 10) {
       Game.state.maxAmount += 100
-      Game.spend('wood', Game.state.stats.chestsOwned * 50)
-      Game.spend('stone', Game.state.stats.chestsOwned * 10)
+      Game.spend('wood', 50)
+      Game.spend('stone', 10)
       Game.state.stats.chestsOwned++
       Game.addLog('craft', 'chest')
     }
   }
 
   Game.buildMiningDrill = () => {
-    if (Game.state.wood < (Game.state.stats.miningDrillsOwned * 100)) Game.addLog('invalid', "You don't have enough wood")
-    if (Game.state.stone < (Game.state.stats.miningDrillsOwned * 100)) Game.addLog('invalid', "You don't have enough stone")
+    if (Game.state.wood < 100) Game.addLog('invalid', "You don't have enough wood")
+    if (Game.state.stone < 100) Game.addLog('invalid', "You don't have enough stone")
 
-    if (Game.state.wood >= (Game.state.stats.miningDrillsOwned * 100) && Game.state.stone >= (Game.state.stats.miningDrillsOwned * 100)) {
-      Game.spend('wood', Game.state.stats.miningDrillsOwned * 100)
-      Game.spend('stone', Game.state.stats.miningDrillsOwned * 100)
-      Game.state.stats.miningDrillsOwned++
+    if (Game.state.wood >= 100 && Game.state.stone >= 100) {
+      Game.spend('wood', 100)
+      Game.spend('stone', 100)
+      Game.state.miningDrills.owned++
+      Game.state.miningDrills.inactive+=
+      Game.rebuildSelectedTab = 1
+      Game.addLog('craft', 'mining drill')
     }
-
   }
 
   Game.addLog = (type, amount) => {
@@ -283,6 +364,8 @@ Game.launch = () => {
     } else if (type == 'craft') {
       let words = ['created', 'crafted', 'made']
       newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
+    } else {
+      newLog.innerHTML = amount
     }
 
     s('.logs-container').prepend(newLog)
