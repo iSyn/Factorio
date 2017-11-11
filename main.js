@@ -11,8 +11,8 @@ Game.launch = () => {
     maxAmount: 100,
 
     worldResources: [
-      {name: 'WOOD', amount: 150, locked: 0},
-      {name: 'STONE', amount: 100, locked: 0},
+      {name: 'WOOD', amount: 600, locked: 0},
+      {name: 'STONE', amount: 500, locked: 0},
       {name: 'COAL', amount: 50, locked: 1},
       {name: 'COPPER', amount: 50, locked: 1},
       {name: 'IRON', amount: 50, locked: 1},
@@ -29,7 +29,7 @@ Game.launch = () => {
       overallTotalStone: 0,
       overallTotalWood: 0,
       chestsOwned: 1,
-      miningDrillOwned: 1
+      miningDrillsOwned: 1
     }
   }
 
@@ -44,18 +44,29 @@ Game.launch = () => {
     Game.rebuildWorldResources = 1
   }
 
-  Game.earn = (type, amount) => {
+  Game.earn = (type, total) => {
 
-    if (Game.state[type] + amount <= Game.state.maxAmount) {
-      Game.state[type] += amount
-    } else {
-      Game.state[type] = Game.state.maxAmount
+    let selectedResource
+    for (i in Game.state.worldResources) {
+      if (type.toUpperCase() == Game.state.worldResources[i].name) {
+        selectedResource = Game.state.worldResources[i]
+      }
     }
 
-    if (type == 'stone') Game.state.stats.overallTotalStone += amount
-    if (type == 'wood') Game.state.stats.overallTotalWood += amount
+    if (selectedResource.amount >= total) {
+      selectedResource.amount -= total
+        if (Game.state[type] + total <= Game.state.maxAmount) {
+        Game.state[type] += total
+      } else {
+        Game.state[type] = Game.state.maxAmount
+      }
+    }
+
+    if (type == 'stone') Game.state.stats.overallTotalStone += total
+    if (type == 'wood') Game.state.stats.overallTotalWood += total
 
     Game.rebuildInventory = 1
+    Game.rebuildWorldResources = 1
   }
 
   Game.spend = (type, amount) => {
@@ -127,20 +138,6 @@ Game.launch = () => {
     Game.rebuildWorldResources = 0
   }
 
-  Game.removeWorldResources = (resource, total) => {
-    let selectedResource;
-
-    for (i in Game.state.worldResources) {
-      if (resource == Game.state.worldResources[i].name) {
-        selectedResource = Game.state.worldResources[i]
-      }
-    }
-
-    selectedResource.amount -= total
-
-    Game.rebuildWorldResources = 1
-  }
-
   Game.buildInventory = () => {
     let str = ``
 
@@ -206,7 +203,7 @@ Game.launch = () => {
       str += `
         <div class="content">
           <div class="action" onmouseover='Game.showTooltip("build-chest")' onmouseout='Game.hideTooltip()' onclick='Game.buildChest()'>BUILD CHEST</div>
-          <div class="action" onmouseover='Game.showTooltip("build-mining-drill")' onmouseout='Game.hideTooltip()' onclick='Game.buildChest()'>BUILD MINING DRILL</div>
+          <div class="action" onmouseover='Game.showTooltip("build-mining-drill")' onmouseout='Game.hideTooltip()' onclick='Game.buildMiningDrill()'>BUILD MINING DRILL</div>
         </div>
       `
     }
@@ -253,11 +250,19 @@ Game.launch = () => {
       Game.spend('wood', Game.state.stats.chestsOwned * 50)
       Game.spend('stone', Game.state.stats.chestsOwned * 10)
       Game.state.stats.chestsOwned++
+      Game.addLog('craft', 'chest')
     }
-
   }
 
   Game.buildMiningDrill = () => {
+    if (Game.state.wood < (Game.state.stats.miningDrillsOwned * 100)) Game.addLog('invalid', "You don't have enough wood")
+    if (Game.state.stone < (Game.state.stats.miningDrillsOwned * 100)) Game.addLog('invalid', "You don't have enough stone")
+
+    if (Game.state.wood >= (Game.state.stats.miningDrillsOwned * 100) && Game.state.stone >= (Game.state.stats.miningDrillsOwned * 100)) {
+      Game.spend('wood', Game.state.stats.miningDrillsOwned * 100)
+      Game.spend('stone', Game.state.stats.miningDrillsOwned * 100)
+      Game.state.stats.miningDrillsOwned++
+    }
 
   }
 
@@ -277,7 +282,7 @@ Game.launch = () => {
       newLog.innerHTML = `<i style='color: slateblue'>${amount}</i>`
     } else if (type == 'craft') {
       let words = ['created', 'crafted', 'made']
-      newLog.innerHTML = `You ${words[choose(words)]} 1 ${amount}`
+      newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
     }
 
     s('.logs-container').prepend(newLog)
