@@ -93,6 +93,14 @@ html, body {
   flex-flow: row nowrap;
 }
 
+/*.tab-content {
+  animation: fadeIn .5s;
+}*/
+
+.fadeIn {
+  animation: fadeIn .5s;
+}
+
 .content {
   display: flex;
   flex-flow: row wrap;
@@ -143,6 +151,7 @@ html, body {
 .mining-resource-container {
   display: flex;
   flex-flow: row nowrap;
+  margin-bottom: 5px;
 }
 
 .mining-resource-container button {
@@ -152,4 +161,8 @@ html, body {
   width: 15px;
   margin: 0 5px;
   cursor: pointer;
+}
+
+.next-line-push {
+  width: 500px;
 }
