@@ -272,7 +272,7 @@ Game.launch = () => {
   Game.buildDrills = () => {
     let str = `
       <br/>
-      <h3>DRILLS</h3>
+      <h3>DRILLS <span style='font-size: small'>(owned: ${Game.state.miningDrills.owned} | active: ${Game.state.miningDrills.active} | inactive: ${Game.state.miningDrills.inactive})</span></h3>
       <hr/>
       <div class="mining-drills-container">
         `
@@ -281,15 +281,6 @@ Game.launch = () => {
             if (Game.state.worldResources[i].name != 'WOOD') {
               let name = Game.state.worldResources[i].name
 
-              // str += `
-              //   <div class="mining-resource-container">
-              //     <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
-              //     <button onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button>
-              //     <p class="${Game.state.worldResources[i].name}-drills">${Game.state.miningDrills[name]}</p>
-              //     <button onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>
-              //   </div>
-              // `
-
               str += `
                 <div class="mining-resource-container">
                   <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
@@ -297,9 +288,18 @@ Game.launch = () => {
                   <div class="fuel-container">
                     <p>Fuel: </p>
                     <select>
-                      <option value="Wood">Wood</option>
+                      <option disabled>Select Fuel Type</option>
+                      <option selected value="Wood">Wood</option>
                       <option value="Coal">Coal</option>
                     </select>
+                  </div>
+                  <p>Drills: <button class='drill-btn' onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>${Game.state.miningDrills[name]}<button class='drill-btn' onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button></p>
+                  <button>Activate</button>
+                  <br/>
+                  <hr/>
+
+                  <div class="drill-stats">
+                    <p>Cost: 1 wood/s</p>
                   </div>
 
                 </div>
@@ -657,7 +657,9 @@ Game.launch = () => {
     console.log('clicked')
     Game.state.wood += 200
     Game.state.stone += 200
-    Game.state.iron += 100
+    Game.state.iron += 200
+    Game.state.coal += 200
+    Game.state.copper += 200
     Game.buildInventory()
   }
 
