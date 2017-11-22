@@ -272,19 +272,33 @@ Game.launch = () => {
       <h3>DRILLS</h3>
       <hr/>
       <div class="mining-drills-container">
-        <div class="mining-drills-left">
         `
         for (i in Game.state.worldResources) {
           if (!Game.state.worldResources[i].locked) {
             if (Game.state.worldResources[i].name != 'WOOD') {
               let name = Game.state.worldResources[i].name
 
+              // str += `
+              //   <div class="mining-resource-container">
+              //     <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
+              //     <button onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button>
+              //     <p class="${Game.state.worldResources[i].name}-drills">${Game.state.miningDrills[name]}</p>
+              //     <button onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>
+              //   </div>
+              // `
+
               str += `
                 <div class="mining-resource-container">
                   <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
-                  <button onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button>
-                  <p class="${Game.state.worldResources[i].name}-drills">${Game.state.miningDrills[name]}</p>
-                  <button onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>
+                  <hr style='margin-bottom: 5px;' />
+                  <div class="fuel-container">
+                    <p>Fuel: </p>
+                    <select>
+                      <option value="Wood">Wood</option>
+                      <option value="Coal">Coal</option>
+                    </select>
+                  </div>
+
                 </div>
               `
 
@@ -293,12 +307,7 @@ Game.launch = () => {
         }
 
         str += `
-        </div>
-        <div class="mining-drills-right">
-          <p>DRILLS OWNED: ${Game.state.miningDrills.owned}</p>
-          <p>ACTIVE DRILLS: ${Game.state.miningDrills.active}</p>
-          <p>INACTIVE DRILLS: ${Game.state.miningDrills.inactive}</p>
-        </div>
+
       </div>
     `
     return str
@@ -613,6 +622,13 @@ Game.launch = () => {
 
   Game.load()
   Game.logic()
+
+  s('header').onclick = () => {
+    console.log('clicked')
+    Game.state.wood += 200
+    Game.state.stone += 200
+    Game.buildInventory()
+  }
 
 
 }

@@ -144,14 +144,21 @@ html, body {
   flex-flow: row nowrap;
 }
 
-.mining-drills-left {
-  flex-grow: 1;
-}
 
 .mining-resource-container {
-  display: flex;
-  flex-flow: row nowrap;
-  margin-bottom: 5px;
+  /*display: flex;*/
+  /*flex-flow: row nowrap;*/
+  /*margin-bottom: 5px;*/
+  width: 300px;
+  height: 250px;
+  border: 2px solid black;
+  padding: 5px;
+  margin-right: 5px;
+}
+
+.mining-resource-name {
+  text-align: center;
+  font-weight: bold;
 }
 
 .mining-resource-container button {
@@ -161,6 +168,16 @@ html, body {
   width: 15px;
   margin: 0 5px;
   cursor: pointer;
+}
+
+.fuel-container {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.fuel-container select {
+  margin-left: 5px;
+  background: transparent;
 }
 
 .next-line-push {
