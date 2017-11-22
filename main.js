@@ -34,6 +34,9 @@ Game.launch = () => {
     furnaces: {
       owned: 0
     },
+    labs: {
+      owned: 0
+    },
 
     selectedTab: 'ACTION',
     tabs: [
@@ -149,7 +152,7 @@ Game.launch = () => {
     if (type == 'build-lab') {
       tooltip.innerHTML = `
         <p>Costs: 50 stone, 10 raw iron</p>
-        <p><i>Enables TECHNOLOGY</i></p>
+        <p><i>Enables TECHNOLOGY <br/> Increases technology speed</i></p>
       `
     }
 
@@ -582,6 +585,33 @@ Game.launch = () => {
     }
   }
 
+  Game.buildLab = () => {
+    console.log('buildLab firing')
+    if (Game.state.stone < 50) Game.addLog('invalid', 'You dont have enough stone')
+    if (Game.state.iron < 10) Game.addLog('invalid', 'You dont have enough iron')
+
+    if (Game.state.stone >= 50 && Game.state.iron >= 10) {
+      Game.spend('stone', 50)
+      Game.spend('iron', 10)
+      Game.state.labs.owned++
+      Game.rebuildSelectedTab = 1
+      Game.addLog('craft', 'lab')
+
+      // if (Game.state.tabs[2].locked == true) {
+      //   Game.state.tabs[2].locked == false
+
+      //   Game.rebuildTabs = 1
+      // }
+      console.log(Game.state.tabs[2])
+      if (Game.state.tabs[2].locked == true) {
+        console.log('tab is locked')
+        Game.state.tabs[2].locked = false
+        Game.rebuildTabs = 1
+      }
+
+    }
+  }
+
   Game.addLog = (type, amount) => {
     let newLog = document.createElement('p')
     newLog.classList.add('log')
@@ -627,6 +657,7 @@ Game.launch = () => {
     console.log('clicked')
     Game.state.wood += 200
     Game.state.stone += 200
+    Game.state.iron += 100
     Game.buildInventory()
   }
 
