@@ -1,4 +1,11 @@
 let s = ((el) => {return document.querySelector(el)})
+let select = ((arr, what) => {
+  for (i in arr) {
+    if (arr[i].name == what) {
+      return arr[i]
+    }
+  }
+})
 let choose = ((arr) => {return Math.floor(Math.random() * arr.length)})
 
 let Game = {}
@@ -14,9 +21,9 @@ Game.launch = () => {
     // maxAmount: 100,
 
     worldResources: [
-      {name: 'WOOD', amount: 400},
-      {name: 'STONE', amount: 400},
-      {name: 'COAL', amount: 0},
+      {name: 'WOOD', amount: 1000},
+      {name: 'STONE', amount: 1000},
+      {name: 'COAL', amount: 300},
       {name: 'COPPER', amount: 0},
       {name: 'IRON', amount: 0},
     ],
@@ -62,6 +69,10 @@ Game.launch = () => {
       owned: 0
     },
 
+    tech: {
+      currentTech: null
+    },
+
     selectedTab: 'ACTION',
     tabs: [
       {name: 'ACTION', locked: false},
@@ -87,6 +98,10 @@ Game.launch = () => {
 
     actions.forEach((action) => {
       new Action(action)
+    })
+
+    technologies.forEach((technology) => {
+      new Technology(technology)
     })
 
     Game.rebuildTabs = 1
@@ -161,45 +176,10 @@ Game.launch = () => {
     Game.rebuildInventory = 1
   }
 
-  Game.showTooltip = (type) => {
+  Game.showTooltip = (text) => {
     let tooltip = s('.tooltip')
 
-    if (type == 'chop-tree') {
-      tooltip.innerHTML = `<p>Gain 3-5 wood</p>`
-    }
-
-    if (type == 'explore') {
-      tooltip.innerHTML = `<p>Look around your surroundings</p>`
-    }
-
-    if (type == 'mine-stone') {
-      tooltip.innerHTML = `<p>Gain 1-2 stone(s)</p>`
-    }
-
-    if (type == 'mine-coal') tooltip.innerHTML = '<p>Gain 1 coal</p>'
-    if (type == 'mine-copper') tooltip.innerHTML = '<p>Gain 1 copper</p>'
-    if (type == 'mine-iron') tooltip.innerHTML = '<p>Gain 1 iron</p>'
-
-    if (type == 'build-mining-drill') {
-      tooltip.innerHTML = `
-        <p>Cost: 100 wood, 100 stone</p>
-        <p><i>Allows for automation</i></p>
-      `
-    }
-
-    if (type == 'build-furnace') {
-      tooltip.innerHTML = `
-        <p>Cost: 100 stone, 25 coal</p>
-        <p><i>Smelts raw materials</i></p>
-      `
-    }
-
-    if (type == 'build-lab') {
-      tooltip.innerHTML = `
-        <p>Costs: 50 stone, 10 raw iron</p>
-        <p><i>Enables TECHNOLOGY <br/> Increases technology speed</i></p>
-      `
-    }
+    tooltip.innerHTML = text
 
     tooltip.style.position = 'absolute'
     tooltip.style.border = '2px solid black'
@@ -207,6 +187,68 @@ Game.launch = () => {
     tooltip.style.top = event.clientY + 15 + 'px'
     tooltip.style.left = event.clientX - tooltip.getBoundingClientRect().width/2 + 'px'
   }
+
+  // Game.showTooltip = (type) => {
+  //   let tooltip = s('.tooltip')
+
+  //   if (type == 'chop-tree') {
+  //     tooltip.innerHTML = `<p>Gain 5-7 wood</p>`
+  //   }
+
+  //   if (type == 'explore') {
+  //     tooltip.innerHTML = `<p>Look around your surroundings</p>`
+  //   }
+
+  //   if (type == 'mine-stone') {
+  //     tooltip.innerHTML = `<p>Gain 3-5 stone</p>`
+  //   }
+
+  //   if (type == 'mine-coal') tooltip.innerHTML = '<p>Gain 1 coal</p>'
+  //   if (type == 'mine-copper') tooltip.innerHTML = '<p>Gain 1 copper</p>'
+  //   if (type == 'mine-iron') tooltip.innerHTML = '<p>Gain 1 iron</p>'
+
+  //   if (type == 'build-mining-drill') {
+  //     tooltip.innerHTML = `
+  //       <p><strong>Cost: 100 wood, 100 stone</strong></p>
+  //       <p><i>Allows for automation</i></p>
+  //     `
+  //   }
+
+  //   if (type == 'build-furnace') {
+  //     tooltip.innerHTML = `
+  //       <p><strong>Cost: 100 stone, 25 coal</strong></p>
+  //       <p><i>Smelts raw materials</i></p>
+  //     `
+  //   }
+
+  //   if (type == 'build-lab') {
+  //     tooltip.innerHTML = `
+  //       <p><strong>Costs: 50 stone, 10 raw iron</strong></p>
+  //       <p><i>Enables TECHNOLOGY <br/> Increases technology speed</i></p>
+  //     `
+  //   }
+
+  //   if (type == 'build-red-science-pack') {
+  //     tooltip.innerHTML = `
+  //       <p><strong>Costs: 1 copper plate, 1 iron gear</strong></p>
+  //       <p><i>Used for basic science<i/></p>
+  //     `
+  //   }
+
+  //   if (type == 'locomotion') {
+  //     tooltip.innerHTML = `
+  //       <p><strong>Costs: 1 copper plate, 1 iron gear</strong></p>
+  //       <p><i>Used for basic science<i/></p>
+  //     `
+  //   }
+
+
+  //   tooltip.style.position = 'absolute'
+  //   tooltip.style.border = '2px solid black'
+  //   tooltip.style.display = 'block'
+  //   tooltip.style.top = event.clientY + 15 + 'px'
+  //   tooltip.style.left = event.clientX - tooltip.getBoundingClientRect().width/2 + 'px'
+  // }
 
   Game.hideTooltip = () => {
     let tooltip = s('.tooltip')
@@ -339,60 +381,69 @@ Game.launch = () => {
     {
       name: 'EXPLORE',
       tab: 'GATHER',
-      tooltip: 'explore',
+      tooltip: '<p>Look around your surroundings</p>',
       onclick: 'Game.explore',
       locked: 0,
       nextLine: true
     }, {
       name: 'CHOP TREE',
       tab: 'GATHER',
-      tooltip: 'chop-tree',
+      tooltip: '<p>Gain 5-7 wood</p>',
       onclick: 'Game.chopTree',
       locked: 0
     }, {
       name: 'MINE ROCK',
       tab: 'GATHER',
-      tooltip: 'mine-stone',
+      tooltip: '<p>Gain 3-5 stone</p>',
       onclick: 'Game.mineRock',
       locked: 0
     }, {
       name: 'MINE COAL',
       tab: 'GATHER',
-      tooltip: 'mine-coal',
+      tooltip: '<p>Gain 1 coal</p>',
       onclick: 'Game.mineCoal',
       locked: 1
     }, {
       name: 'MINE COPPER',
       tab: 'GATHER',
-      tooltip: 'mine-copper',
+      tooltip: '<p>Gain 1 copper</p>',
       onclick: 'Game.mineCopper',
       locked: 1
     }, {
       name: 'MINE IRON',
       tab: 'GATHER',
-      tooltip: 'mine-iron',
+      tooltip: '<p>Gain 1 iron</p>',
       onclick: 'Game.mineIron',
       locked: 1
     }, {
       name: 'BUILD MINING DRILL',
       tab: 'BUILD',
-      tooltip: 'build-mining-drill',
+      tooltip: '<p><strong>Cost: 100 wood, 100 stone</strong></p><p><i>Allows for automation</i></p>',
       onclick: 'Game.buildMiningDrill',
       locked: 0
     }, {
       name: 'BUILD FURNACE',
       tab: 'BUILD',
-      tooltip: 'build-furnace',
+      tooltip: '<p><strong>Cost: 100 stone, 25 coal</strong></p><p><i>Smelts raw materials</i></p>',
       onclick: 'Game.buildFurnace',
       locked: 0
     }, {
       name: 'BUILD LAB',
       tab: 'BUILD',
-      tooltip: 'build-lab',
+      tooltip: '<p><strong>Cost: 50 stone, 10 iron</strong></p><p><i>Enables technology</i></p>',
       onclick: 'Game.buildLab',
-      locked: 0
+      locked: 0,
+      nextLine: true
+    }, {
+      name: 'BUILD RED SCIENCE PACK',
+      tab: 'BUILD',
+      tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
+      onclick: '',
+      locked: 1,
     }
   ]
+
+  Game.technologies = []
 
   Game.buildSelectedTab = () => {
     let selectedTab = Game.state.selectedTab
@@ -420,7 +471,6 @@ Game.launch = () => {
 
       if (Game.state.miningDrillsInfo.owned > 0) str += Game.buildDrills()
       if (Game.state.furnaces.owned > 0) str += Game.buildFurnaces()
-
     }
 
     if (selectedTab == 'BUILD') {
@@ -431,13 +481,48 @@ Game.launch = () => {
         let action = Game.actions[i]
         if (action.tab == 'BUILD') {
           if (!action.locked) {
-            str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+            if (action.nextLine) {
+              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `<div class="next-line-push"></div>`
+            } else {
+              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+            }
           }
         }
       }
 
       str += '</div>'
+    }
 
+    if (selectedTab == 'TECHNOLOGY') {
+
+      str += `<div class="current-tech">`
+
+      if (!Game.state.tech.currentTech) {
+        str += `
+          <h3 style='text-align: center; padding: 50px 0; opacity: .6;'>NO CURRENT TECH IN PROGRESS</h3>
+          <hr/>
+        `
+      }
+
+        str += `</div>`
+
+        str += `
+          <h3>AVAILABLE TECHNOLOGY</h3>
+          <div class="available-techs">
+        `
+
+        for (i in Game.technologies) {
+          if (Game.technologies[i].locked == 0) {
+            if (Game.technologies[i].learned == 0) {
+              str += `
+                <div class="available-tech" onmouseover='Game.showTooltip("${Game.technologies[i].tooltip}")' onmouseout='Game.hideTooltip()'></div>
+              `
+            }
+          }
+        }
+
+        str += `</div>`
     }
 
 
@@ -508,13 +593,13 @@ Game.launch = () => {
         str += `
           <div class="mining-resource-container">
             <p style='text-align: center; font-weight: bold;'>${Game.state.miningDrills[i].type}</p>
-            <hr/>
+            <hr style='margin-bottom: 5px'/>
             `
             // BUILDS ON AND OFF BUTTONS
             if (Game.state.miningDrills[i].power == 0) {
-              str += `<p>Power: <button onclick='Game.toggleDrillPower(1, ${i})' class="power-btn">OFF</button></p>`
+              str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleDrillPower(1, ${i})' class="power-btn">OFF</button></p>`
             } else {
-              str += `<p>Power: <button onclick='Game.toggleDrillPower(0, ${i})' class="power-btn">ON</button></p>`
+              str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleDrillPower(0, ${i})' class="power-btn">ON</button></p>`
             }
 
             // BUILDS FUEL DROPDOWN THINGY
@@ -555,7 +640,7 @@ Game.launch = () => {
 
             // BUILD ADD/REMOVE DRILLS
             str += `
-              <p>Drills: <button onclick='Game.addRemoveDrill(0, ${i})' class='drill-btn'>-</button>${Game.state.miningDrills[i].active}<button onclick='Game.addRemoveDrill(1, ${i})' class='drill-btn'>+</button></p>
+              <p style='margin-bottom: 5px'>Drills: <button onclick='Game.addRemoveDrill(0, ${i})' class='drill-btn'>-</button>${Game.state.miningDrills[i].active}<button onclick='Game.addRemoveDrill(1, ${i})' class='drill-btn'>+</button></p>
             `
 
             // DRILL STATS N SHIT
@@ -586,12 +671,12 @@ Game.launch = () => {
   }
 
   Game.explore = () => {
-    // Game.addLog(null, 'You explore your surroundings but found nothing notable.')
-    let amounts = [1, 3, 5, 10]
-    let amount = Math.floor(Math.random() * 10) + 1
+    // // Game.addLog(null, 'You explore your surroundings but found nothing notable.')
+    // let amounts = [1, 5, 10]
+    // let amount = Math.floor(Math.random() * 20) + 1
 
     let selectedType = Game.state.worldResources[choose(Game.state.worldResources)]
-    let selectedAmount = Math.floor(Math.random() * 10) + 1
+    let selectedAmount = Math.floor(Math.random() * 20) + 1
 
     if (Math.random() >= .3) { // 70% chance
       selectedType.amount += selectedAmount
@@ -600,6 +685,9 @@ Game.launch = () => {
       if (selectedType.name == 'COAL') Game.actions[3].locked = 0
       if (selectedType.name == 'COPPER') Game.actions[4].locked = 0
       if (selectedType.name == 'IRON') Game.actions[5].locked = 0
+
+      // patch of ...
+      // vein of ...
 
       Game.addLog(null, `You find ${selectedAmount} ${selectedType.name.toLowerCase()}.`)
       Game.rebuildWorldResources = 1
@@ -611,7 +699,7 @@ Game.launch = () => {
 
   Game.chopTree = () => {
     // Math.floor(Math.random() * (max - min + 1)) + min
-    let amount = Math.floor(Math.random() * (5 - 3 + 1)) + 3
+    let amount = Math.floor(Math.random() * (7 - 5 + 1)) + 5
 
     if (Game.state.worldResources[0].amount >= amount) {
       Game.earn('wood', amount)
@@ -624,7 +712,8 @@ Game.launch = () => {
   }
 
   Game.mineRock = () => {
-    let amount = Math.floor(Math.random() * 2) + 1
+    // Math.floor(Math.random() * (max - min + 1)) + min
+    let amount = Math.floor(Math.random() * (5 - 3 + 1)) + 3
 
     if (Game.state.worldResources[1].amount >= amount) {
       Game.earn('stone', amount)
@@ -700,7 +789,6 @@ Game.launch = () => {
   }
 
   Game.buildLab = () => {
-    console.log('buildLab firing')
     if (Game.state.stone < 50) Game.addLog('invalid', 'You dont have enough stone')
     if (Game.state.iron < 10) Game.addLog('invalid', 'You dont have enough iron')
 
@@ -708,17 +796,15 @@ Game.launch = () => {
       Game.spend('stone', 50)
       Game.spend('iron', 10)
       Game.state.labs.owned++
+
+      let redScience = select(Game.actions, "BUILD RED SCIENCE PACK")
+      if (redScience.locked == 1) redScience.locked = 0
+
+
       Game.rebuildSelectedTab = 1
       Game.addLog('craft', 'lab')
 
-      // if (Game.state.tabs[2].locked == true) {
-      //   Game.state.tabs[2].locked == false
-
-      //   Game.rebuildTabs = 1
-      // }
-      console.log(Game.state.tabs[2])
       if (Game.state.tabs[2].locked == true) {
-        console.log('tab is locked')
         Game.state.tabs[2].locked = false
         Game.rebuildTabs = 1
       }

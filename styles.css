@@ -197,6 +197,7 @@ button:active {
 .fuel-container {
   display: flex;
   flex-flow: row nowrap;
+  margin-bottom: 5px;
 }
 
 .fuel-container select {
@@ -206,4 +207,17 @@ button:active {
 
 .next-line-push {
   width: 100vw;
+}
+
+.available-techs {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+.available-tech {
+  border: 2px solid black;
+  height: 100px;
+  width: 100px;
+  margin: 5px;
+  cursor: pointer;
 }
