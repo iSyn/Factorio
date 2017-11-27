@@ -150,8 +150,9 @@ html, body {
   /*display: flex;*/
   /*flex-flow: row nowrap;*/
   /*margin-bottom: 5px;*/
-  width: 25%;
-  max-width: 170px;
+  width: 170px;
+  max-width: 200px;
+  min-width: 170px;
   height: 250px;
   border: 2px solid black;
   padding: 5px;
