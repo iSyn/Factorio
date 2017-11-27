@@ -120,17 +120,6 @@ Game.launch = () => {
 
   Game.earnPassiveResources = () => {
 
-    // wood = .5 fuel
-    // coal = 2 fuel
-    // 1 resource = 1 fuel
-
-    // ex. you have 5 drills on stone
-    /*
-      if fuel == wood
-        let loss = active  * 2
-        let gain = active
-
-    */
     let gain, loss, selectedResource;
 
 
@@ -145,13 +134,18 @@ Game.launch = () => {
         for (i in Game.state.worldResources) { // GRAB WORLD RESOURCE VALUE
           if (Game.state.worldResources[i].name == drill.type) selectedResource = Game.state.worldResources[i]
         }
-        if (selectedResource.amount > gain && Game.state[resourceNeeded] > loss) {
-          console.log('earning', drill.type)
-          Game.earn(drill.type.toLowerCase(), gain)
-          Game.state[resourceNeeded] -= loss
-        } else if (selectedResource.amount < gain && Game.state[resourceNeeded] > loss) {
-          Game.earn(drill.type.toLowerCase(), selectedResource.amount)
-          Game.state[resourceNeeded] -= loss
+        // IF WE HAVE ENOUGH FUEL TO SPEND
+        if (Game.state[resourceNeeded] > loss) {
+          // IF WORLD RESOURCE IS MORE THAN 0
+          if (selectedResource.amount > 0) {
+            if (selectedResource.amount >= gain) {
+              Game.earn(drill.type.toLowerCase(), gain)
+              Game.state[resourceNeeded] -= loss
+            } else {
+              Game.earn(drill.type.toLowerCase(), selectedResource.amount)
+              Game.state[resourceNeeded] -= loss
+            }
+          }
         }
 
         Game.rebuildInventory = 1
@@ -559,18 +553,25 @@ Game.launch = () => {
               `
             }
 
-
-
-
             // BUILD ADD/REMOVE DRILLS
             str += `
               <p>Drills: <button onclick='Game.addRemoveDrill(0, ${i})' class='drill-btn'>-</button>${Game.state.miningDrills[i].active}<button onclick='Game.addRemoveDrill(1, ${i})' class='drill-btn'>+</button></p>
             `
 
             // DRILL STATS N SHIT
-            str += `
-              <hr/>
-            `
+            if (Game.state.miningDrills[i].power == 1) {
+              str += `
+                <hr/>
+                <p>STATS</p>
+                <hr/>
+                <p>+${Game.state.miningDrills[i].active} ${Game.state.miningDrills[i].type.toLowerCase()}/s</p>
+              `
+              if (Game.state.miningDrills[i].fuel == 'Wood') {
+                str += `<p>-${Game.state.miningDrills[i].active * 2} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
+              } else if (Game.state.miningDrills[i].fuel == 'Coal') {
+                str += `<p>-${Math.ceil(Game.state.miningDrills[i].active / 2)} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
+              }
+            }
 
             str += `
           </div>
