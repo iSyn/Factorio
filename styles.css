@@ -120,6 +120,19 @@ html, body {
   user-select: none;
 }
 
+button {
+  outline: none;
+}
+
+button:hover {
+  filter: brightness(80%);
+}
+
+button:active {
+  filter: brightness(65%);
+}
+
+
 .action:hover {
   text-decoration: underline;
   filter: brightness(80%);
@@ -164,8 +177,16 @@ html, body {
   font-weight: bold;
 }
 
+.power-btn {
+  background: white;
+  border: 1px solid black;
+  border-radius: 0px;
+  cursor: pointer;
+  padding: 2px;
+}
+
 .drill-btn{
-  background: transparent;
+  background: white;
   border: 1px solid black;
   border-radius: 0px;
   width: 15px;

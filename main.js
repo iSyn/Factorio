@@ -21,14 +21,37 @@ Game.launch = () => {
       {name: 'IRON', amount: 0},
     ],
 
-    miningDrills: {
+    miningDrills: [
+      {
+        type: 'STONE',
+        power: 0,
+        active: 0,
+        fuel: null,
+      },
+      {
+        type: 'COAL',
+        power: 0,
+        active: 0,
+        fuel: null,
+      },
+      {
+        type: 'COPPER',
+        power: 0,
+        active: 0,
+        fuel: null,
+      },
+      {
+        type: 'IRON',
+        power: 0,
+        active: 0,
+        fuel: null,
+      },
+    ],
+
+    miningDrillsInfo: {
       owned: 0,
       active: 0,
       inactive: 0,
-      STONE: {active: 0, fuel: null, amountLeftFromFuel: 0},
-      COAL: {active: 0, fuel: null, amountLeftFromFuel: 0},
-      COPPER: {active: 0, fuel: null, amountLeftFromFuel: 0},
-      IRON: {active: 0, fuel: null, amountLeftFromFuel: 0}
     },
 
     furnaces: {
@@ -96,55 +119,42 @@ Game.launch = () => {
   }
 
   Game.earnPassiveResources = () => {
-    // if (Game.state.miningDrills.STONE > 0) {
-    //   let gain = Game.state.miningDrills.STONE * 2 // STONE GAIN
-    //   let loss = Math.ceil(Game.state.miningDrills.STONE / 2) // WOOD LOSS
 
-    //   if (Game.state.worldResources[1].amount >= gain && Game.state.wood >= loss) {
-    //     Game.earn('stone', gain)
-    //     Game.spend('wood', loss)
-    //   }
+    // wood = .5 fuel
+    // coal = 2 fuel
+    // 1 resource = 1 fuel
 
-    // Game.rebuildInventory = 1
-    // }
+    // ex. you have 5 drills on stone
+    /*
+      if fuel == wood
+        let loss = active  * 2
+        let gain = active
 
-    let resourceGain = 0;
-    let resourceLoss = 0;
+    */
+    let gain, loss, selectedResource;
 
-    let coalBonus = 5
-    let woodBonus = 2
 
-    // IF THERE ARE DRILLS ON STONE
-    if (Game.state.miningDrills.STONE.active > 0) {
-      resourceGain = Game.state.miningDrills.STONE.active // STONE GAIN
-      resourceLoss = Game.state.miningDrills.STONE.active // FUEL LOSS
-      // IF STONE DRILL HAS SELECTED FUEL
-      if (Game.state.miningDrills.STONE.fuel != null) {
-        let selectedFuel = Game.state.miningDrills.STONE.fuel.toLowerCase()
-
-        // IF DRILL STILL HAS FUEL, DONT TAKE RESOURCES, ONLY GAIN
-        console.log('AMOUNT LEFT FROM FUEL:', Game.state.miningDrills.STONE.amountLeftFromFuel)
-        if (Game.state.miningDrills.STONE.amountLeftFromFuel > 0) {
-          console.log('has fuel')
-          Game.earn('stone', resourceGain)
-          Game.state.miningDrills.STONE.amountLeftFromFuel--
-        } else {
-          console.log('adding fuel')
-          // IF DRILL DOESNT HAVE FUEL
-          // ADD FUEL
-          if (Game.state.miningDrills.STONE.fuel == 'wood') {
-            Game.state.miningDrills.STONE.amountLeftFromFuel = woodBonus
-          } else {
-            Game.state.miningDrills.STONE.amountLeftFromFuel = coalBonus
-          }
-          // EARN RESOURCES
-          Game.earn('stone', resourceGain)
-          // SPEND FUEL
-          Game.state.miningDrills.STONE.amountLeftFromFuel--
-          console.log('selected fuel', selectedFuel)
-          Game.spend(`${selectedFuel}`, resourceLoss)
+    for (i in Game.state.miningDrills) {
+      let drill = Game.state.miningDrills[i]
+      // IF DRILL IS TURNED ON
+      if (drill.power == 1) {
+        let resourceNeeded = drill.fuel.toLowerCase()
+        gain = drill.active
+        if (drill.fuel == 'Wood') loss = drill.active * 2
+        if (drill.fuel == 'Coal') loss = Math.ceil(drill.active / 2)
+        for (i in Game.state.worldResources) { // GRAB WORLD RESOURCE VALUE
+          if (Game.state.worldResources[i].name == drill.type) selectedResource = Game.state.worldResources[i]
+        }
+        if (selectedResource.amount > gain && Game.state[resourceNeeded] > loss) {
+          console.log('earning', drill.type)
+          Game.earn(drill.type.toLowerCase(), gain)
+          Game.state[resourceNeeded] -= loss
+        } else if (selectedResource.amount < gain && Game.state[resourceNeeded] > loss) {
+          Game.earn(drill.type.toLowerCase(), selectedResource.amount)
+          Game.state[resourceNeeded] -= loss
         }
 
+        Game.rebuildInventory = 1
       }
     }
   }
@@ -310,107 +320,6 @@ Game.launch = () => {
     }, 500)
   }
 
-  Game.changeFuelOption = (drill) => {
-    let selectedDrill = s(`#${drill}-fuel`)
-
-    Game.state.miningDrills[drill].fuel = selectedDrill.value
-
-    Game.rebuildSelectedTab = 1
-  }
-
-  Game.buildDrills = () => {
-    let str = `
-      <br/>
-      <h3>DRILLS <span style='font-size: small'>(owned: ${Game.state.miningDrills.owned} | active: ${Game.state.miningDrills.active} | inactive: ${Game.state.miningDrills.inactive})</span></h3>
-      <hr/>
-      <div class="mining-drills-container">
-        `
-        for (i in Game.state.worldResources) {
-          if (!Game.state.worldResources[i].locked) {
-            if (Game.state.worldResources[i].name != 'WOOD') {
-              let name = Game.state.worldResources[i].name
-
-              str += `
-                <div id='drill-${i}' class="mining-resource-container">
-                  <p class="mining-resource-name">${Game.state.worldResources[i].name}</p>
-                  <hr style='margin-bottom: 5px;' />
-                  <div class="fuel-container">
-                    <p>Fuel: </p>
-                    `
-                      if (Game.state.miningDrills[name].fuel == null) {
-                        str += `
-                          <select id='${name}-fuel' onchange='Game.changeFuelOption("${name}")'>
-                            <option disabled selected>Select Fuel Type</option>
-                            <option value="Wood">Wood</option>
-                            <option value="Coal">Coal</option>
-                          </select>
-                        `
-                      } else {
-                        if (Game.state.miningDrills[name].fuel == 'Wood') {
-                          str += `
-                            <select id='${name}-fuel' onchange='Game.changeFuelOption("${name}")'>
-                              <option disabled>Select Fuel Type</option>
-                              <option selected value="Wood">Wood</option>
-                              <option value="Coal">Coal</option>
-                            </select>
-                          `
-                        } else if (Game.state.miningDrills[name].fuel == 'Coal') {
-                          str += `
-                            <select id='${name}-fuel' onchange='Game.changeFuelOption("${name}")'>
-                              <option disabled>Select Fuel Type</option>
-                              <option value="Wood">Wood</option>
-                              <option selected value="Coal">Coal</option>
-                            </select>
-                          `
-                        }
-                      }
-
-                    str += `
-                  </div>
-                  <p>Drills: <button class='drill-btn' onclick='Game.removeDrill("${Game.state.worldResources[i].name}")'>-</button>${Game.state.miningDrills[name].active}<button class='drill-btn' onclick='Game.addDrill("${Game.state.worldResources[i].name}")'>+</button></p>
-                  <br/>
-                  <hr/>
-
-                  `
-
-                  if (Game.state.miningDrills[name].active > 0) {
-                    if (Game.state.miningDrills[name].fuel != null) {
-                      str += Game.drillStats(`${name}`)
-                    } else {
-                      str += '<p>Select fuel to start drilling</p>'
-                    }
-                  }
-
-                  str += `</div>`
-
-            }
-          }
-        }
-
-        str += `
-
-      </div>
-    `
-    return str
-  }
-
-  Game.drillStats = (drill) => {
-    console.log('drillstats firing')
-    let selectedDrill = Game.state.miningDrills[drill]
-
-
-    let str = `
-      <div class="drill-stats">
-        <p style='font-weight: bold; text-align: center'>STATS</p>
-        <hr/>
-        <p>+${selectedDrill.active} ${drill.toLowerCase()}/s</p>
-        <p>-${selectedDrill.active} ${selectedDrill.fuel.toLowerCase()}/4s</p>
-      </div>
-    `
-
-    return str
-  }
-
   Game.buildFurnaces = () => {
     let str = `
       <br/>
@@ -418,38 +327,6 @@ Game.launch = () => {
       <hr/>
     `
     return str
-  }
-
-  Game.addDrill = (type) => {
-
-    // IF WE HAVE AVAILABLE DRILLS
-    if (Game.state.miningDrills.inactive > 0) {
-      // MINUS ONE FROM AVAILABLE DRILLS
-      Game.state.miningDrills.inactive--
-      // ADD ONE TO ACTIVE DRILLS
-      Game.state.miningDrills.active++
-
-      // ADD ONE TO SELECTED ACTIVE DRILL
-      Game.state.miningDrills[type].active++
-
-      Game.rebuildSelectedTab = 1
-    }
-  }
-
-  Game.removeDrill = (type) => {
-
-    // IF SELECTED DRILL HAS ACTIVE
-    if (Game.state.miningDrills[type].active > 0) {
-      // MINUS ONE FROM SELECTED DRILL
-      Game.state.miningDrills[type].active--
-      // MINUS ONE FROM ACTIVE
-      Game.state.miningDrills.active--
-      // ADD ONE BACK TO INACTIVE
-      Game.state.miningDrills.inactive++
-
-      Game.rebuildSelectedTab = 1
-
-    }
   }
 
   Game.actions = []
@@ -547,7 +424,7 @@ Game.launch = () => {
 
       str += `</div>`
 
-      if (Game.state.miningDrills.owned > 0) str += Game.buildDrills()
+      if (Game.state.miningDrillsInfo.owned > 0) str += Game.buildDrills()
       if (Game.state.furnaces.owned > 0) str += Game.buildFurnaces()
 
     }
@@ -574,6 +451,137 @@ Game.launch = () => {
     s('.tab-content').innerHTML = str
 
     Game.rebuildSelectedTab = 0
+  }
+
+  Game.toggleDrillPower = (pow, drill) => {
+    let selectedDrill = Game.state.miningDrills[drill]
+
+    if (selectedDrill.fuel != null && selectedDrill.active > 0) {
+      selectedDrill.power = pow
+
+      Game.rebuildSelectedTab = 1
+    } else {
+      Game.addLog('invalid', 'Select a fuel type before powering on drill')
+    }
+
+    if (selectedDrill.active == 0) {
+      Game.addLog('invalid', 'Add some drills')
+    }
+  }
+
+  Game.addRemoveDrill = (type, drill) => {
+    let selectedDrill = Game.state.miningDrills[drill]
+
+    if (type == 0) {
+      // REMOVE DRILLS
+      if (selectedDrill.active > 0) {
+        selectedDrill.active--
+        Game.state.miningDrillsInfo.inactive++
+        Game.state.miningDrillsInfo.active--
+        if (selectedDrill.active == 0) {
+          selectedDrill.power = 0
+        }
+      }
+    } else {
+      // ADD DRILLS
+      if (Game.state.miningDrillsInfo.inactive > 0) {
+        selectedDrill.active++
+        Game.state.miningDrillsInfo.inactive--
+        Game.state.miningDrillsInfo.active++
+      }
+    }
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.changeFuel = (drill) => {
+    let selectedDrill = Game.state.miningDrills[drill]
+    let selectedSelect = s(`#fuel-${drill}`)
+
+    selectedDrill.fuel = selectedSelect.value
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.buildDrills = () => {
+    let str = `
+      <br/>
+      <h3>DRILLS <span style='font-size: small'>owned: ${Game.state.miningDrillsInfo.owned} | active: ${Game.state.miningDrillsInfo.active} | inactive: ${Game.state.miningDrillsInfo.inactive}</span></h3>
+      <hr/>
+      <div class="mining-drills-container">
+      `
+      for (i in Game.state.miningDrills) {
+        str += `
+          <div class="mining-resource-container">
+            <p style='text-align: center; font-weight: bold;'>${Game.state.miningDrills[i].type}</p>
+            <hr/>
+            `
+            // BUILDS ON AND OFF BUTTONS
+            if (Game.state.miningDrills[i].power == 0) {
+              str += `<p>Power: <button onclick='Game.toggleDrillPower(1, ${i})' class="power-btn">OFF</button></p>`
+            } else {
+              str += `<p>Power: <button onclick='Game.toggleDrillPower(0, ${i})' class="power-btn">ON</button></p>`
+            }
+
+            // BUILDS FUEL DROPDOWN THINGY
+            if (Game.state.miningDrills[i].fuel == null) {
+              str += `
+                <div class="fuel-container">
+                  <p>Fuel: </p>
+                  <select id='fuel-${i}' onchange='Game.changeFuel("${i}")'>
+                    <option selected disabled>Select Fuel Type</option>
+                    <option value="Wood">Wood</option>
+                    <option value="Coal">Coal</option>
+                  </select>
+                </div>
+              `
+            } else if (Game.state.miningDrills[i].fuel == 'Wood') {
+              str += `
+                <div class="fuel-container">
+                  <p>Fuel: </p>
+                  <select id='fuel-${i}' onchange='Game.changeFuel("${i}")'>
+                    <option disabled>Select Fuel Type</option>
+                    <option selected value="Wood">Wood</option>
+                    <option value="Coal">Coal</option>
+                  </select>
+                </div>
+              `
+            } else if (Game.state.miningDrills[i].fuel == 'Coal') {
+              str += `
+                <div class="fuel-container">
+                  <p>Fuel: </p>
+                  <select id='fuel-${i}' onchange='Game.changeFuel("${i}")'>
+                    <option disabled>Select Fuel Type</option>
+                    <option value="Wood">Wood</option>
+                    <option selected value="Coal">Coal</option>
+                  </select>
+                </div>
+              `
+            }
+
+
+
+
+            // BUILD ADD/REMOVE DRILLS
+            str += `
+              <p>Drills: <button onclick='Game.addRemoveDrill(0, ${i})' class='drill-btn'>-</button>${Game.state.miningDrills[i].active}<button onclick='Game.addRemoveDrill(1, ${i})' class='drill-btn'>+</button></p>
+            `
+
+            // DRILL STATS N SHIT
+            str += `
+              <hr/>
+            `
+
+            str += `
+          </div>
+        `
+      }
+
+      str += `
+      </div>
+    `
+
+    return str
   }
 
   Game.explore = () => {
@@ -670,8 +678,8 @@ Game.launch = () => {
     if (Game.state.wood >= 100 && Game.state.stone >= 100) {
       Game.spend('wood', 100)
       Game.spend('stone', 100)
-      Game.state.miningDrills.owned++
-      Game.state.miningDrills.inactive+=
+      Game.state.miningDrillsInfo.owned++
+      Game.state.miningDrillsInfo.inactive++
       Game.rebuildSelectedTab = 1
       Game.addLog('craft', 'mining drill')
     }
