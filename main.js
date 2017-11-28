@@ -552,6 +552,9 @@ Game.launch = () => {
       <br/>
       <h3>CONSTRUCTORS</h3>
       <hr/>
+      <div class="constructors-container">
+        <div class="constructor"></div>
+      </div>
     `
 
     return str

@@ -94,6 +94,7 @@ html, body {
 .tabs {
   display: flex;
   flex-flow: row nowrap;
+  min-height: 22px;
 }
 
 .tab-content {
@@ -282,4 +283,19 @@ button:active {
 
 .current-tech-info {
   flex-grow: 1;
+}
+
+.constructors-container {
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.constructor {
+  border: 2px dotted black;
+  width: 170px;
+  max-width: 200px;
+  min-width: 170px;
+  height: 250px;
+  padding: 5px;
+  margin-right: 5px;
 }
