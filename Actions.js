@@ -16,7 +16,6 @@ let actions = [
     tooltip: '<p>Look around your surroundings</p>',
     onclick: 'Game.explore',
     locked: 0,
-
   }, {
     name: 'CHOP TREE',
     tab: 'GATHER',
@@ -86,11 +85,36 @@ let actions = [
     onclick: 'Game.buildLab',
     locked: 0,
   }, {
+    name: 'BUILD CONSTRUCTOR',
+    tab: 'BUILD',
+    tooltip: '<p><strong>Cost: 5 iron plates, 2 iron gears, 3 copper coils</strong></p><p><i>Automate the constructing of an item</i></p>',
+    onclick: 'Game.buildConstructor',
+    locked: 1
+  }, {
     name: 'BUILD RED SCIENCE',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
     onclick: 'Game.buildRedScience',
     locked: 1,
     nextLine: true
+  }, {
+    name: 'BUILD BLUE SCIENCE',
+    tab: 'BUILD',
+    tooltip: '<p><strong>Cost: 3 copper coils, 3 iron screws</strong></p><p><i>Used for intermediate science</i></p>',
+    onclick: 'Game.buildBlueScience',
+    locked: 1,
+  }, {
+    name: 'BUILD IRON GEAR',
+    tab: 'BUILD',
+    tooltip: '<p><strong>Cost: 2 iron plates</strong></p><p><i>Used for crafting</i></p>',
+    onclick: 'Game.buildIronGear',
+    locked: 1,
+    nextLine: true
+  }, {
+    name: 'BUILD COPPER COIL',
+    tab: 'BUILD',
+    tooltip: '<p><strong>Cost: 2 copper plates</strong></p><p><i>Used for crafting</i></p>',
+    onclick: 'Game.buildCopperCoil',
+    locked: 1,
   }
 ]

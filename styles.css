@@ -44,7 +44,9 @@ html, body {
 .page-content-middle {
   width: 50%;
   border-right: 6px solid black;
-  overflow: auto;
+  /*overflow: auto;*/
+  display: flex;
+  flex-flow: column nowrap;
 }
 
 .page-content-right {
@@ -94,9 +96,9 @@ html, body {
   flex-flow: row nowrap;
 }
 
-/*.tab-content {
-  animation: fadeIn .5s;
-}*/
+.tab-content {
+  padding-bottom: 30px;
+}
 
 .fadeIn {
   animation: fadeIn .5s;
@@ -210,7 +212,7 @@ button:active {
   width: 100vw;
 }
 
-.available-techs {
+.available-techs, .locked-techs {
   display: flex;
   flex-flow: row wrap;
 }

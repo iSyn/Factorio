@@ -20,6 +20,8 @@ Game.launch = () => {
     iron: 0,
     copperPlate: 0,
     ironPlate: 0,
+    copperCoil: 0,
+    ironGear: 0,
     redScience: 0,
     blueScience: 0,
 
@@ -95,6 +97,14 @@ Game.launch = () => {
 
     tech: {
       currentTech: null
+    },
+
+    constructor: {
+
+    },
+
+    constructorInfo: {
+      owned: 0
     },
 
     selectedTab: 'ACTION',
@@ -237,11 +247,17 @@ Game.launch = () => {
       tech.learned = 1
       tech.inProgress = false
       if (tech.onFinish) {
-        if (tech.onFinish.unlock) {
-          for (i in tech.onFinish.unlock) {
-            let name = tech.onFinish.unlock[i]
+        if (tech.onFinish.unlockTech) {
+          for (i in tech.onFinish.unlockTech) {
+            let name = tech.onFinish.unlockTech[i]
             let techToUnlock = select(Game.technologies, name)
             techToUnlock.locked = 0
+          }
+        }
+        if (tech.onFinish.unlockAction) {
+          for (i in tech.onFinish.unlockAction) {
+            let action = tech.onFinish.unlockAction[i]
+            select(Game.actions, action).locked = 0
           }
         }
       }
@@ -359,6 +375,24 @@ Game.launch = () => {
         <div class="inventory-item">
           <p class="inventory-item-name">IRON PLATE</p>
           <p class='inventory-item-amount'>${Game.state.ironPlate}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.copperCoil > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">COPPER COIL</p>
+          <p class='inventory-item-amount'>${Game.state.copperCoil}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.ironGear > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">IRON GEAR</p>
+          <p class='inventory-item-amount'>${Game.state.ironGear}</p>
         </div>
       `
     }
@@ -509,7 +543,17 @@ Game.launch = () => {
         str += `</div>`
       }
 
-      str += `</div> <div style='height: 100px; width: 100%'></div>`
+      str += `</div>`
+    return str
+  }
+
+  Game.buildConstructors = () => {
+    let str = `
+      <br/>
+      <h3>CONSTRUCTORS</h3>
+      <hr/>
+    `
+
     return str
   }
 
@@ -543,6 +587,7 @@ Game.launch = () => {
 
       if (Game.state.miningDrillsInfo.owned > 0) str += Game.buildDrills()
       if (Game.state.furnacesInfo.owned > 0) str += Game.buildFurnaces()
+      if (Game.state.constructorInfo.owned > 0) str += Game.buildConstructors()
     }
 
     if (selectedTab == 'BUILD') {
@@ -610,6 +655,21 @@ Game.launch = () => {
         }
 
         str += `</div>`
+
+        str += `
+          <h3>LOCKED TECHNOLOGY</h3>
+          <div class="locked-techs">
+          `
+          for (i in Game.technologies) {
+            if (Game.technologies[i].locked == 1) {
+              str += `
+                <div class="available-tech" onclick='Game.addLog("invalid", "Tech is locked")' onmouseover='Game.showTooltip("<h4>${Game.technologies[i].name.toUpperCase()}</h4><hr/><p>Requires: ${Game.technologies[i].requires}</p>")' onmouseout='Game.hideTooltip()'></div>
+              `
+            }
+          }
+
+          str += `</div>`
+
     }
 
     s('.tab-content').innerHTML = str
@@ -1012,6 +1072,8 @@ Game.launch = () => {
       Game.state.ironPlate--
       Game.state.redScience++
 
+      Game.addLog('success', 'You crafted a red science')
+
       Game.rebuildInventory = 1
     } else {
       if (Game.state.copperPlate < 1) Game.addLog('invalid', 'You do not have enough copper plates')
@@ -1040,6 +1102,48 @@ Game.launch = () => {
         Game.rebuildTabs = 1
       }
 
+    }
+  }
+
+  Game.buildIronGear = () => {
+    if (Game.state.ironPlate >= 2) {
+      Game.state.ironPlate -= 2
+      Game.state.ironGear += 1
+
+      Game.addLog('success', 'You made an iron gear')
+
+      Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'You do not have enough iron plates')
+    }
+  }
+
+  Game.buildCopperCoil = () => {
+    if (Game.state.copperPlate >= 2) {
+      Game.state.copperPlate -= 2
+      Game.state.copperCoil += 1
+
+      Game.addLog('success', 'You crafted a copper coil')
+
+      Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'You do not have enough copper plates')
+    }
+  }
+
+  Game.buildConstructor = () => {
+    if (Game.state.ironPlate >= 5 && Game.state.ironGear >= 2 && Game.state.copperCoil >= 3) {
+      Game.state.ironPlate -= 5
+      Game.state.ironGear -= 2
+      Game.state.copperCoil -= 3
+
+      Game.addLog("success", 'You made a constructor')
+
+      Game.state.constructorInfo.owned++
+    } else {
+      if (Game.state.ironPlate < 5) Game.addLog('invalid', 'You do not have enough iron plates')
+      if (Game.state.ironGear < 2) Game.addLog('invalid', 'You do not have enough iron gears')
+      if (Game.state.copperCoil < 3) Game.addLog('invalid', 'You do not have enough copper coils')
     }
   }
 
