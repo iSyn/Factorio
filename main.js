@@ -221,15 +221,18 @@ Game.launch = () => {
   }
 
   Game.calculateRemainingTechDuration = () => {
-    let progressBar = s('.progress')
 
     if (Game.state.tech.currentTech.currentDuration >= 0) {
       Game.state.tech.currentTech.currentDuration -= 30
       let barWidth = 100 - (Game.state.tech.currentTech.currentDuration/Game.state.tech.currentTech.duration * 100)
-
-      progressBar.style.width = barWidth + '%'
+      if (Game.state.selectedTab == 'TECHNOLOGY') {
+        let progressBar = s('.progress')
+        progressBar.style.width = barWidth + '%'
+      }
     } else {
       Game.recalculateRemainingTechDuration = 0
+      Game.state.tech.currentTech = null
+      Game.rebuildSelectedTab = 1
     }
   }
 
