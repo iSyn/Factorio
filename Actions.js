@@ -89,7 +89,7 @@ let actions = [
     name: 'BUILD RED SCIENCE PACK',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
-    onclick: '',
+    onclick: 'Game.buildRedSciencePack',
     locked: 1,
     nextLine: true
   }

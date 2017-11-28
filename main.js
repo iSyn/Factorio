@@ -20,6 +20,7 @@ Game.launch = () => {
     iron: 0,
     copperPlate: 0,
     ironPlate: 0,
+    redSciencePack: 0,
 
     worldResources: [
       {name: 'WOOD', amount: 1000},
@@ -55,7 +56,6 @@ Game.launch = () => {
         fuel: null,
       },
     ],
-
     miningDrillsInfo: {
       owned: 0,
       active: 0,
@@ -82,7 +82,6 @@ Game.launch = () => {
         fuel: null
       }
     ],
-
     furnacesInfo: {
       owned: 0,
       active: 0,
@@ -110,8 +109,6 @@ Game.launch = () => {
       overallTotalCoal: 0,
       overallTotalCopper: 0,
       overallTotalIron: 0,
-
-      chestsOwned: 0,
     }
   }
 
@@ -223,6 +220,19 @@ Game.launch = () => {
     }
   }
 
+  Game.calculateRemainingTechDuration = () => {
+    let progressBar = s('.progress')
+
+    if (Game.state.tech.currentTech.currentDuration >= 0) {
+      Game.state.tech.currentTech.currentDuration -= 30
+      let barWidth = 100 - (Game.state.tech.currentTech.currentDuration/Game.state.tech.currentTech.duration * 100)
+
+      progressBar.style.width = barWidth + '%'
+    } else {
+      Game.recalculateRemainingTechDuration = 0
+    }
+  }
+
   Game.spend = (type, amount) => {
     if (Game.state[type] >= amount) {
       Game.state[type] -= amount
@@ -330,6 +340,15 @@ Game.launch = () => {
         <div class="inventory-item">
           <p class="inventory-item-name">IRON PLATE</p>
           <p class='inventory-item-amount'>${Game.state.ironPlate}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.redSciencePack > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">RED SCIENCE PACK</p>
+          <p class='inventory-item-amount'>${Game.state.redSciencePack}</p>
         </div>
       `
     }
@@ -507,8 +526,8 @@ Game.launch = () => {
         if (action.tab == 'BUILD') {
           if (!action.locked) {
             if (action.nextLine) {
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
               str += `<div class="next-line-push"></div>`
+              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             } else {
               str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             }
@@ -528,6 +547,19 @@ Game.launch = () => {
           <h3 style='text-align: center; padding: 50px 0; opacity: .6;'>NO CURRENT TECH IN PROGRESS</h3>
           <hr/>
         `
+      } else {
+        str += `
+          <div class="current-tech-container">
+            <div class="current-tech-img"></div>
+            <div class="current-tech-info">
+              <h4>${Game.state.tech.currentTech.name}</h4>
+              <div class="progress-bar-container">
+                <div class="progress"></div>
+              </div>
+            </div>
+          </div>
+          <hr/>
+        `
       }
 
         str += `</div>`
@@ -540,17 +572,17 @@ Game.launch = () => {
         for (i in Game.technologies) {
           if (Game.technologies[i].locked == 0) {
             if (Game.technologies[i].learned == 0) {
-              str += `
-                <div class="available-tech" onmouseover='Game.showTooltip("${Game.technologies[i].tooltip}")' onmouseout='Game.hideTooltip()'></div>
-              `
+              if (Game.technologies[i].inProgress == false) {
+                str += `
+                  <div class="available-tech" onclick='Game.learnTech(${JSON.stringify(Game.technologies[i])})' onmouseover='Game.showTooltip("${Game.technologies[i].tooltip}")' onmouseout='Game.hideTooltip()'></div>
+                `
+              }
             }
           }
         }
 
         str += `</div>`
     }
-
-
 
     s('.tab-content').innerHTML = str
 
@@ -744,6 +776,28 @@ Game.launch = () => {
     return str
   }
 
+  Game.learnTech = (tech) => {
+    Game.hideTooltip()
+
+    let selectedTech = select(Game.technologies, tech.name)
+
+    if (selectedTech.price.RED_SCIENCE_PACK) {
+      if (Game.state.redSciencePack >= selectedTech.price.RED_SCIENCE_PACK) {
+        Game.state.redSciencePack -= selectedTech.price.RED_SCIENCE_PACK
+
+        Game.state.tech.currentTech = selectedTech
+        Game.state.tech.currentTech.currentDuration = selectedTech.duration
+        selectedTech.inProgress = true
+        Game.recalculateRemainingTechDuration = 1
+
+      } else {
+        Game.addLog('invalid', 'You do not have enough red science packs')
+      }
+    }
+
+    Game.rebuildSelectedTab = 1
+  }
+
   Game.explore = () => {
     // // Game.addLog(null, 'You explore your surroundings but found nothing notable.')
     // let amounts = [1, 5, 10]
@@ -835,6 +889,39 @@ Game.launch = () => {
     Game.addLog('mine', amount)
   }
 
+  Game.burnWood = () => {
+    if (Game.state.wood >= 2) {
+      Game.state.wood -= 2
+      Game.state.coal++
+
+      Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'Not enough resources')
+    }
+  }
+
+  Game.smeltCopper = () => {
+    if (Game.state.copper >= 2) {
+      Game.state.copper -= 2
+      Game.state.copperPlate++
+
+      Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'Not enough resources')
+    }
+  }
+
+  Game.smeltIron = () => {
+    if (Game.state.iron >= 2) {
+      Game.state.iron -= 2
+      Game.state.ironPlate++
+
+      Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'Not enough resources')
+    }
+  }
+
   Game.buildMiningDrill = () => {
     if (Game.state.wood < 100) Game.addLog('invalid', "You don't have enough wood")
     if (Game.state.stone < 100) Game.addLog('invalid', "You don't have enough stone")
@@ -869,6 +956,19 @@ Game.launch = () => {
 
       Game.rebuildSelectedTab = 1
 
+    }
+  }
+
+  Game.buildRedSciencePack = () => {
+    if (Game.state.copperPlate >= 1 && Game.state.ironPlate >= 1) {
+      Game.state.copperPlate--
+      Game.state.ironPlate--
+      Game.state.redSciencePack++
+
+      Game.rebuildInventory = 1
+    } else {
+      if (Game.state.copperPlate < 1) Game.addLog('invalid', 'You do not have enough copper plates')
+      if (Game.state.ironPlate < 1) Game.addLog('invalid', 'You do not have enough iron plates')
     }
   }
 
@@ -930,6 +1030,7 @@ Game.launch = () => {
     if (Game.rebuildTabs) Game.buildTabs()
     if (Game.rebuildSelectedTab) Game.buildSelectedTab()
     if (Game.rebuildWorldResources) Game.buildWorldResources()
+    if (Game.recalculateRemainingTechDuration) Game.calculateRemainingTechDuration()
 
     setTimeout(Game.logic, 1000/30)
   }
@@ -944,6 +1045,9 @@ Game.launch = () => {
     Game.state.iron += 200
     Game.state.coal += 200
     Game.state.copper += 200
+    Game.state.ironPlate += 200
+    Game.state.copperPlate += 200
+    Game.state.redSciencePack += 200
     Game.buildInventory()
   }
 
