@@ -44,6 +44,7 @@ html, body {
 .page-content-middle {
   width: 50%;
   border-right: 6px solid black;
+  overflow: auto;
 }
 
 .page-content-right {
@@ -220,4 +221,30 @@ button:active {
   width: 100px;
   margin: 5px;
   cursor: pointer;
+  background: white;
+}
+
+.available-tech:hover {
+  filter: brightness(70%);
+}
+
+.available-tech:active {
+  filter: brightness(65%);
+}
+
+.furnaces-container {
+  display: flex;
+  flex-flow: row nowrap;
+  padding-top: 5px;
+  overflow: auto;
+}
+
+.furnace-container {
+  border: 2px solid black;
+  width: 170px;
+  max-width: 200px;
+  min-width: 170px;
+  height: 250px;
+  padding: 5px;
+  margin-right: 5px;
 }

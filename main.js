@@ -18,7 +18,8 @@ Game.launch = () => {
     coal: 0,
     copper: 0,
     iron: 0,
-    // maxAmount: 100,
+    copperPlate: 0,
+    ironPlate: 0,
 
     worldResources: [
       {name: 'WOOD', amount: 1000},
@@ -61,8 +62,31 @@ Game.launch = () => {
       inactive: 0,
     },
 
-    furnaces: {
-      owned: 0
+    furnaces: [
+      {
+        type: 'WOOD',
+        power: 0,
+        active: 0,
+        fuel: null
+      },
+      {
+        type: 'IRON',
+        power: 0,
+        active: 0,
+        fuel: null
+      },
+      {
+        type: 'COPPER',
+        power: 0,
+        active: 0,
+        fuel: null
+      }
+    ],
+
+    furnacesInfo: {
+      owned: 0,
+      active: 0,
+      inactive: 0
     },
 
     labs: {
@@ -111,15 +135,18 @@ Game.launch = () => {
 
   Game.earn = (type, total) => {
 
-    let selectedResource
-    for (i in Game.state.worldResources) {
-      if (type.toUpperCase() == Game.state.worldResources[i].name) {
-        selectedResource = Game.state.worldResources[i]
+    if (type == 'wood' || type == 'stone' || type == 'coal' || type == 'copper' || type == 'iron') {
+      let selectedResource
+      for (i in Game.state.worldResources) {
+        if (type.toUpperCase() == Game.state.worldResources[i].name) {
+          selectedResource = Game.state.worldResources[i]
+        }
       }
-    }
-
-    if (selectedResource.amount >= total) {
-      selectedResource.amount -= total
+      if (selectedResource.amount >= total) {
+        selectedResource.amount -= total
+        Game.state[type] += total
+      }
+    } else {
       Game.state[type] += total
     }
 
@@ -137,7 +164,7 @@ Game.launch = () => {
 
     let gain, loss, selectedResource;
 
-
+    // DRILLS
     for (i in Game.state.miningDrills) {
       let drill = Game.state.miningDrills[i]
       // IF DRILL IS TURNED ON
@@ -150,7 +177,7 @@ Game.launch = () => {
           if (Game.state.worldResources[i].name == drill.type) selectedResource = Game.state.worldResources[i]
         }
         // IF WE HAVE ENOUGH FUEL TO SPEND
-        if (Game.state[resourceNeeded] > loss) {
+        if (Game.state[resourceNeeded] >= loss) {
           // IF WORLD RESOURCE IS MORE THAN 0
           if (selectedResource.amount > 0) {
             if (selectedResource.amount >= gain) {
@@ -163,6 +190,34 @@ Game.launch = () => {
           }
         }
 
+        Game.rebuildInventory = 1
+      }
+    }
+
+    // FURNACES
+    for (i in Game.state.furnaces) {
+      let furnace = Game.state.furnaces[i]
+      // IF THE FURNACE IS ON
+      if (furnace.power == 1) {
+        let resourceGain = furnace.active
+        let resourceLoss = furnace.active * 2
+        let selectedFuel = furnace.fuel.toLowerCase()
+        let furnaceType = furnace.type.toLowerCase()
+        if (furnace.fuel == 'Wood') loss = furnace.active * 2
+        if (furnace.fuel == 'Coal') loss = Math.ceil(furnace.active / 2)
+
+        // IF WE HAVE FUEL
+        if (Game.state[selectedFuel] >= loss) {
+          // IF WE HAVE ENOUGH RESOURCES EX. IRON -> IRON PLATES
+          if (Game.state[furnaceType] >= resourceLoss) {
+            Game.state[furnaceType] -= resourceLoss
+            Game.state[selectedFuel] -= loss
+            // if (furnace.type == 'WOOD') Game.earn('coal', resourceGain)
+            if (furnace.type == 'WOOD') Game.state.coal += resourceGain
+            if (furnace.type == 'COPPER') Game.earn('copperPlate', resourceGain)
+            if (furnace.type == 'IRON') Game.earn('ironPlate', resourceGain)
+          }
+        }
         Game.rebuildInventory = 1
       }
     }
@@ -187,68 +242,6 @@ Game.launch = () => {
     tooltip.style.top = event.clientY + 15 + 'px'
     tooltip.style.left = event.clientX - tooltip.getBoundingClientRect().width/2 + 'px'
   }
-
-  // Game.showTooltip = (type) => {
-  //   let tooltip = s('.tooltip')
-
-  //   if (type == 'chop-tree') {
-  //     tooltip.innerHTML = `<p>Gain 5-7 wood</p>`
-  //   }
-
-  //   if (type == 'explore') {
-  //     tooltip.innerHTML = `<p>Look around your surroundings</p>`
-  //   }
-
-  //   if (type == 'mine-stone') {
-  //     tooltip.innerHTML = `<p>Gain 3-5 stone</p>`
-  //   }
-
-  //   if (type == 'mine-coal') tooltip.innerHTML = '<p>Gain 1 coal</p>'
-  //   if (type == 'mine-copper') tooltip.innerHTML = '<p>Gain 1 copper</p>'
-  //   if (type == 'mine-iron') tooltip.innerHTML = '<p>Gain 1 iron</p>'
-
-  //   if (type == 'build-mining-drill') {
-  //     tooltip.innerHTML = `
-  //       <p><strong>Cost: 100 wood, 100 stone</strong></p>
-  //       <p><i>Allows for automation</i></p>
-  //     `
-  //   }
-
-  //   if (type == 'build-furnace') {
-  //     tooltip.innerHTML = `
-  //       <p><strong>Cost: 100 stone, 25 coal</strong></p>
-  //       <p><i>Smelts raw materials</i></p>
-  //     `
-  //   }
-
-  //   if (type == 'build-lab') {
-  //     tooltip.innerHTML = `
-  //       <p><strong>Costs: 50 stone, 10 raw iron</strong></p>
-  //       <p><i>Enables TECHNOLOGY <br/> Increases technology speed</i></p>
-  //     `
-  //   }
-
-  //   if (type == 'build-red-science-pack') {
-  //     tooltip.innerHTML = `
-  //       <p><strong>Costs: 1 copper plate, 1 iron gear</strong></p>
-  //       <p><i>Used for basic science<i/></p>
-  //     `
-  //   }
-
-  //   if (type == 'locomotion') {
-  //     tooltip.innerHTML = `
-  //       <p><strong>Costs: 1 copper plate, 1 iron gear</strong></p>
-  //       <p><i>Used for basic science<i/></p>
-  //     `
-  //   }
-
-
-  //   tooltip.style.position = 'absolute'
-  //   tooltip.style.border = '2px solid black'
-  //   tooltip.style.display = 'block'
-  //   tooltip.style.top = event.clientY + 15 + 'px'
-  //   tooltip.style.left = event.clientX - tooltip.getBoundingClientRect().width/2 + 'px'
-  // }
 
   Game.hideTooltip = () => {
     let tooltip = s('.tooltip')
@@ -323,6 +316,24 @@ Game.launch = () => {
       `
     }
 
+    if (Game.state.copperPlate > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">COPPER PLATE</p>
+          <p class='inventory-item-amount'>${Game.state.copperPlate}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.ironPlate > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">IRON PLATE</p>
+          <p class='inventory-item-amount'>${Game.state.ironPlate}</p>
+        </div>
+      `
+    }
+
     s('.inventory-container').innerHTML = str
 
     Game.rebuildInventory = 0
@@ -359,89 +370,103 @@ Game.launch = () => {
   Game.buildFurnaces = () => {
     let str = `
       <br/>
-      <h3>FURNACES</h3>
+      <h3>FURNACES <span style='font-size: small'>owned: ${Game.state.furnacesInfo.owned} | active: ${Game.state.furnacesInfo.active} | inactive: ${Game.state.furnacesInfo.inactive}</span></h3>
       <hr/>
-    `
+      <div class="furnaces-container">
+      `
+      for (i in Game.state.furnaces) {
+        str += `<div class="furnace-container">
+          <p style='text-align: center; font-weight: bold;'>${Game.state.furnaces[i].type}</p>
+          <hr/>
+        `
+
+        // ON AND OFF BUTTONS
+        if (Game.state.furnaces[i].power == 0) {
+          str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleFurnacePower(1, ${i})' class="power-btn">OFF</button></p>`
+        } else {
+          str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleFurnacePower(0, ${i})' class="power-btn">ON</button></p>`
+        }
+
+        // FUEL DROPDOWN
+        if (Game.state.furnaces[i].fuel == null) {
+          str += `
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='furnace-fuel-${i}' onchange='Game.changeFurnaceFuel("${i}")'>
+                <option selected disabled>Select Fuel Type</option>
+                <option value="Wood">Wood</option>
+                <option value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        } else if (Game.state.furnaces[i].fuel == 'Wood') {
+          str += `
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='furnace-fuel-${i}' onchange='Game.changeFurnaceFuel("${i}")'>
+                <option disabled>Select Fuel Type</option>
+                <option selected value="Wood">Wood</option>
+                <option value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        } else if (Game.state.furnaces[i].fuel == 'Coal') {
+          str += `
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='furnace-fuel-${i}' onchange='Game.changeFurnaceFuel("${i}")'>
+                <option disabled>Select Fuel Type</option>
+                <option value="Wood">Wood</option>
+                <option selected value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        }
+
+        // BUILD ADD AND REMOVE
+        str += `
+          <p style='margin-bottom: 5px'>Furnaces: <button onclick='Game.addRemoveFurnace(0, ${i})' class='drill-btn'>-</button>${Game.state.furnaces[i].active}<button onclick='Game.addRemoveFurnace(1, ${i})' class='drill-btn'>+</button></p>
+        `
+
+        // FURNACE STATS N SHIT
+        if (Game.state.furnaces[i].power == 1) {
+          str += `
+            <hr/>
+            <br/>
+          `
+          if (Game.state.furnaces[i].type == 'WOOD') {
+            str += `
+              <p>+${Game.state.furnaces[i].active} coal/s</p>
+              <p>-${Game.state.furnaces[i].active * 2} wood/s</p>
+            `
+          }
+          if (Game.state.furnaces[i].type == 'COPPER') {
+            str += `
+              <p>+${Game.state.furnaces[i].active} copper plate/s</p>
+              <p>-${Game.state.furnaces[i].active * 2} copper/s</p>
+            `
+          }
+          if (Game.state.furnaces[i].type == 'IRON') {
+            str += `
+              <p>+${Game.state.furnaces[i].active} iron plate/s</p>
+              <p>-${Game.state.furnaces[i].active * 2} iron/s</p>
+            `
+          }
+          if (Game.state.furnaces[i].fuel == 'Wood') {
+            str += `<p>-${Game.state.furnaces[i].active * 2} ${Game.state.furnaces[i].fuel.toLowerCase()}/s</p>`
+          } else if (Game.state.furnaces[i].fuel == 'Coal') {
+            str += `<p>-${Math.ceil(Game.state.furnaces[i].active / 2)} ${Game.state.furnaces[i].fuel.toLowerCase()}/s</p>`
+          }
+        }
+
+        str += `</div>`
+      }
+
+      str += `</div> <div style='height: 100px; width: 100%'></div>`
     return str
   }
 
   Game.actions = []
-  let Action = function(action) {
-    this.name = action.name
-    this.tab = action.tab
-    this.tooltip = action.tooltip
-    this.onclick = action.onclick
-    this.locked = action.locked
-    if (action.nextLine) this.nextLine = action.nextLine
-
-    Game.actions.push(this)
-  }
-
-  let actions = [
-    {
-      name: 'EXPLORE',
-      tab: 'GATHER',
-      tooltip: '<p>Look around your surroundings</p>',
-      onclick: 'Game.explore',
-      locked: 0,
-      nextLine: true
-    }, {
-      name: 'CHOP TREE',
-      tab: 'GATHER',
-      tooltip: '<p>Gain 5-7 wood</p>',
-      onclick: 'Game.chopTree',
-      locked: 0
-    }, {
-      name: 'MINE ROCK',
-      tab: 'GATHER',
-      tooltip: '<p>Gain 3-5 stone</p>',
-      onclick: 'Game.mineRock',
-      locked: 0
-    }, {
-      name: 'MINE COAL',
-      tab: 'GATHER',
-      tooltip: '<p>Gain 1 coal</p>',
-      onclick: 'Game.mineCoal',
-      locked: 1
-    }, {
-      name: 'MINE COPPER',
-      tab: 'GATHER',
-      tooltip: '<p>Gain 1 copper</p>',
-      onclick: 'Game.mineCopper',
-      locked: 1
-    }, {
-      name: 'MINE IRON',
-      tab: 'GATHER',
-      tooltip: '<p>Gain 1 iron</p>',
-      onclick: 'Game.mineIron',
-      locked: 1
-    }, {
-      name: 'BUILD MINING DRILL',
-      tab: 'BUILD',
-      tooltip: '<p><strong>Cost: 100 wood, 100 stone</strong></p><p><i>Allows for automation</i></p>',
-      onclick: 'Game.buildMiningDrill',
-      locked: 0
-    }, {
-      name: 'BUILD FURNACE',
-      tab: 'BUILD',
-      tooltip: '<p><strong>Cost: 100 stone, 25 coal</strong></p><p><i>Smelts raw materials</i></p>',
-      onclick: 'Game.buildFurnace',
-      locked: 0
-    }, {
-      name: 'BUILD LAB',
-      tab: 'BUILD',
-      tooltip: '<p><strong>Cost: 50 stone, 10 iron</strong></p><p><i>Enables technology</i></p>',
-      onclick: 'Game.buildLab',
-      locked: 0,
-      nextLine: true
-    }, {
-      name: 'BUILD RED SCIENCE PACK',
-      tab: 'BUILD',
-      tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
-      onclick: '',
-      locked: 1,
-    }
-  ]
 
   Game.technologies = []
 
@@ -458,8 +483,8 @@ Game.launch = () => {
         if (action.tab == 'GATHER') {
           if (!action.locked) {
             if (action.nextLine) {
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
               str += '<div class="next-line-push"></div>'
+              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             } else {
               str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             }
@@ -470,7 +495,7 @@ Game.launch = () => {
       str += `</div>`
 
       if (Game.state.miningDrillsInfo.owned > 0) str += Game.buildDrills()
-      if (Game.state.furnaces.owned > 0) str += Game.buildFurnaces()
+      if (Game.state.furnacesInfo.owned > 0) str += Game.buildFurnaces()
     }
 
     if (selectedTab == 'BUILD') {
@@ -532,6 +557,22 @@ Game.launch = () => {
     Game.rebuildSelectedTab = 0
   }
 
+  Game.toggleFurnacePower = (pow, furnace) => {
+    let selectedFurnace = Game.state.furnaces[furnace]
+
+    if (selectedFurnace.fuel != null && selectedFurnace.active > 0) {
+      selectedFurnace.power = pow
+
+      Game.rebuildSelectedTab = 1
+    } else {
+      Game.addLog('invalid', 'Select a fuel type before powering on furnace')
+    }
+
+    if (selectedFurnace.active == 0) {
+      Game.addLog('invalid', 'Add some furnaces')
+    }
+  }
+
   Game.toggleDrillPower = (pow, drill) => {
     let selectedDrill = Game.state.miningDrills[drill]
 
@@ -569,6 +610,40 @@ Game.launch = () => {
         Game.state.miningDrillsInfo.active++
       }
     }
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.addRemoveFurnace = (type, furnace) => {
+    let selectedFurnace = Game.state.furnaces[furnace]
+
+    if (type == 0) {
+      // REMOVE furnace
+      if (selectedFurnace.active > 0) {
+        selectedFurnace.active--
+        Game.state.furnacesInfo.inactive++
+        Game.state.furnacesInfo.active--
+        if (selectedFurnace.active == 0) {
+          selectedFurnace.power = 0
+        }
+      }
+    } else {
+      // ADD furnace
+      if (Game.state.furnacesInfo.inactive > 0) {
+        selectedFurnace.active++
+        Game.state.furnacesInfo.inactive--
+        Game.state.furnacesInfo.active++
+      }
+    }
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.changeFurnaceFuel = (furnace) => {
+    let selectedFurnace = Game.state.furnaces[furnace]
+    let selectedSelect = s(`#furnace-fuel-${furnace}`)
+
+    selectedFurnace.fuel = selectedSelect.value
 
     Game.rebuildSelectedTab = 1
   }
@@ -647,8 +722,7 @@ Game.launch = () => {
             if (Game.state.miningDrills[i].power == 1) {
               str += `
                 <hr/>
-                <p>STATS</p>
-                <hr/>
+                <br/>
                 <p>+${Game.state.miningDrills[i].active} ${Game.state.miningDrills[i].type.toLowerCase()}/s</p>
               `
               if (Game.state.miningDrills[i].fuel == 'Wood') {
@@ -782,9 +856,19 @@ Game.launch = () => {
     if (Game.state.stone >= 100 && Game.state.coal >= 25) {
       Game.spend('stone', 100)
       Game.spend('coal', 25)
-      Game.state.furnaces.owned++
-      Game.rebuildSelectedTab = 1
+      Game.state.furnacesInfo.owned++
+      Game.state.furnacesInfo.inactive++
       Game.addLog('craft', 'furnace')
+
+      // UNLOCK NEW BUTTONS
+      if (select(Game.actions, "BURN WOOD").locked == 1) {
+        select(Game.actions, "BURN WOOD").locked = 0
+        select(Game.actions, "SMELT COPPER").locked = 0
+        select(Game.actions, "SMELT IRON").locked = 0
+      }
+
+      Game.rebuildSelectedTab = 1
+
     }
   }
 
