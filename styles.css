@@ -98,6 +98,8 @@ html, body {
 
 .tab-content {
   padding-bottom: 30px;
+  flex-grow: 1;
+  overflow: auto;
 }
 
 .fadeIn {
