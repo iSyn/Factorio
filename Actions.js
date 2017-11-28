@@ -86,10 +86,10 @@ let actions = [
     onclick: 'Game.buildLab',
     locked: 0,
   }, {
-    name: 'BUILD RED SCIENCE PACK',
+    name: 'BUILD RED SCIENCE',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
-    onclick: 'Game.buildRedSciencePack',
+    onclick: 'Game.buildRedScience',
     locked: 1,
     nextLine: true
   }

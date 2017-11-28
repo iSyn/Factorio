@@ -20,7 +20,8 @@ Game.launch = () => {
     iron: 0,
     copperPlate: 0,
     ironPlate: 0,
-    redSciencePack: 0,
+    redScience: 0,
+    blueScience: 0,
 
     worldResources: [
       {name: 'WOOD', amount: 1000},
@@ -231,6 +232,21 @@ Game.launch = () => {
       }
     } else {
       Game.recalculateRemainingTechDuration = 0
+      Game.addLog('success', `You have completed researching: ${Game.state.tech.currentTech.name}`)
+      let tech = select(Game.technologies, Game.state.tech.currentTech.name)
+      tech.learned = 1
+      tech.inProgress = false
+      if (tech.onFinish) {
+        if (tech.onFinish.unlock) {
+          for (i in tech.onFinish.unlock) {
+            let name = tech.onFinish.unlock[i]
+            let techToUnlock = select(Game.technologies, name)
+            techToUnlock.locked = 0
+          }
+        }
+      }
+
+
       Game.state.tech.currentTech = null
       Game.rebuildSelectedTab = 1
     }
@@ -347,11 +363,20 @@ Game.launch = () => {
       `
     }
 
-    if (Game.state.redSciencePack > 0) {
+    if (Game.state.redScience > 0) {
       str += `
         <div class="inventory-item">
-          <p class="inventory-item-name">RED SCIENCE PACK</p>
-          <p class='inventory-item-amount'>${Game.state.redSciencePack}</p>
+          <p class="inventory-item-name">RED SCIENCE </p>
+          <p class='inventory-item-amount'>${Game.state.redScience}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.blueScience > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">BLUE SCIENCE </p>
+          <p class='inventory-item-amount'>${Game.state.blueScience}</p>
         </div>
       `
     }
@@ -784,18 +809,37 @@ Game.launch = () => {
 
     let selectedTech = select(Game.technologies, tech.name)
 
-    if (selectedTech.price.RED_SCIENCE_PACK) {
-      if (Game.state.redSciencePack >= selectedTech.price.RED_SCIENCE_PACK) {
-        Game.state.redSciencePack -= selectedTech.price.RED_SCIENCE_PACK
+    if (!Game.state.tech.currentTech) {
+      if (selectedTech.price.RED_SCIENCE && !selectedTech.price.BLUE_SCIENCE) {
+        if (Game.state.redScience >= selectedTech.price.RED_SCIENCE) {
+          Game.state.redScience -= selectedTech.price.RED_SCIENCE
+          Game.rebuildInventory = 1
 
-        Game.state.tech.currentTech = selectedTech
-        Game.state.tech.currentTech.currentDuration = selectedTech.duration
-        selectedTech.inProgress = true
-        Game.recalculateRemainingTechDuration = 1
+          Game.state.tech.currentTech = selectedTech
+          Game.state.tech.currentTech.currentDuration = selectedTech.duration
+          Game.recalculateRemainingTechDuration = 1
+          selectedTech.inProgress = true
 
-      } else {
-        Game.addLog('invalid', 'You do not have enough red science packs')
+        } else {
+          Game.addLog('invalid', 'You do not have enough red science')
+        }
+      } else if (selectedTech.price.RED_SCIENCE && selectedTech.price.BLUE_SCIENCE) {
+        if (Game.state.redScience >= selectedTech.price.RED_SCIENCE && Game.state.blueScience >= selectedTech.price.BLUE_SCIENCE) {
+          Game.state.redScience -= selectedTech.price.RED_SCIENCE
+          Game.state.blueScience -= selectedTech.price.BLUE_SCIENCE
+          Game.rebuildInventory = 1
+
+          Game.state.tech.currentTech = selectedTech
+          Game.state.tech.currentTech.currentDuration = selectedTech.duration
+          Game.recalculateRemainingTechDuration = 1
+          selectedTech.inProgress = true
+        } else {
+          if (Game.state.redScience < selectedTech.price.RED_SCIENCE) Game.addLog('invalid', 'Not enough red science')
+          if (Game.state.blueScience < selectedTech.price.BLUE_SCIENCE) Game.addLog('invalid', 'Not enough blue science')
+        }
       }
+    } else {
+      Game.addLog('invalid', 'You are already researching something')
     }
 
     Game.rebuildSelectedTab = 1
@@ -962,11 +1006,11 @@ Game.launch = () => {
     }
   }
 
-  Game.buildRedSciencePack = () => {
+  Game.buildRedScience = () => {
     if (Game.state.copperPlate >= 1 && Game.state.ironPlate >= 1) {
       Game.state.copperPlate--
       Game.state.ironPlate--
-      Game.state.redSciencePack++
+      Game.state.redScience++
 
       Game.rebuildInventory = 1
     } else {
@@ -984,7 +1028,7 @@ Game.launch = () => {
       Game.spend('iron', 10)
       Game.state.labs.owned++
 
-      let redScience = select(Game.actions, "BUILD RED SCIENCE PACK")
+      let redScience = select(Game.actions, "BUILD RED SCIENCE")
       if (redScience.locked == 1) redScience.locked = 0
 
 
@@ -1016,7 +1060,9 @@ Game.launch = () => {
     } else if (type == 'craft') {
       let words = ['created', 'crafted', 'made']
       newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
-    } else {
+    } else if (type == 'success') {
+      newLog.innerHTML = `<p style='color: darkgreen'>${amount}</p>`
+    }else {
       newLog.innerHTML = amount
     }
 
@@ -1050,7 +1096,7 @@ Game.launch = () => {
     Game.state.copper += 200
     Game.state.ironPlate += 200
     Game.state.copperPlate += 200
-    Game.state.redSciencePack += 200
+    Game.state.redScience += 200
     Game.buildInventory()
   }
 
