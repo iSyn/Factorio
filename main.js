@@ -26,9 +26,9 @@ Game.launch = () => {
     blueScience: 0,
 
     worldResources: [
-      {name: 'WOOD', amount: 1000},
-      {name: 'STONE', amount: 1000},
-      {name: 'COAL', amount: 300},
+      {name: 'WOOD', amount: 3000},
+      {name: 'STONE', amount: 3000},
+      {name: 'COAL', amount: 1000},
       {name: 'COPPER', amount: 0},
       {name: 'IRON', amount: 0},
     ],
@@ -179,9 +179,9 @@ Game.launch = () => {
       // IF DRILL IS TURNED ON
       if (drill.power == 1) {
         let resourceNeeded = drill.fuel.toLowerCase()
-        gain = drill.active
-        if (drill.fuel == 'Wood') loss = drill.active * 2
-        if (drill.fuel == 'Coal') loss = Math.ceil(drill.active / 2)
+        gain = drill.active * 3
+        if (drill.fuel == 'Wood') loss = Math.ceil(drill.active / 2)
+        if (drill.fuel == 'Coal') loss = Math.ceil(drill.active / 5)
         for (i in Game.state.worldResources) { // GRAB WORLD RESOURCE VALUE
           if (Game.state.worldResources[i].name == drill.type) selectedResource = Game.state.worldResources[i]
         }
@@ -212,8 +212,8 @@ Game.launch = () => {
         let resourceLoss = furnace.active * 2
         let selectedFuel = furnace.fuel.toLowerCase()
         let furnaceType = furnace.type.toLowerCase()
-        if (furnace.fuel == 'Wood') loss = furnace.active * 2
-        if (furnace.fuel == 'Coal') loss = Math.ceil(furnace.active / 2)
+        if (furnace.fuel == 'Wood') loss = Math.ceil(furnace.active / 2)
+        if (furnace.fuel == 'Coal') loss = Math.ceil(furnace.active / 5)
 
         // IF WE HAVE FUEL
         if (Game.state[selectedFuel] >= loss) {
@@ -535,9 +535,9 @@ Game.launch = () => {
             `
           }
           if (Game.state.furnaces[i].fuel == 'Wood') {
-            str += `<p>-${Game.state.furnaces[i].active * 2} ${Game.state.furnaces[i].fuel.toLowerCase()}/s</p>`
-          } else if (Game.state.furnaces[i].fuel == 'Coal') {
             str += `<p>-${Math.ceil(Game.state.furnaces[i].active / 2)} ${Game.state.furnaces[i].fuel.toLowerCase()}/s</p>`
+          } else if (Game.state.furnaces[i].fuel == 'Coal') {
+            str += `<p>-${Math.ceil(Game.state.furnaces[i].active / 5)} ${Game.state.furnaces[i].fuel.toLowerCase()}/s</p>`
           }
         }
 
@@ -860,12 +860,12 @@ Game.launch = () => {
               str += `
                 <hr/>
                 <br/>
-                <p>+${Game.state.miningDrills[i].active} ${Game.state.miningDrills[i].type.toLowerCase()}/s</p>
+                <p style='text-align: center'>+${Game.state.miningDrills[i].active * 3} ${Game.state.miningDrills[i].type.toLowerCase()}/s</p>
               `
               if (Game.state.miningDrills[i].fuel == 'Wood') {
-                str += `<p>-${Game.state.miningDrills[i].active * 2} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
+                str += `<p style='text-align: center'>-${Math.ceil(Game.state.miningDrills[i].active / 2)} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
               } else if (Game.state.miningDrills[i].fuel == 'Coal') {
-                str += `<p>-${Math.ceil(Game.state.miningDrills[i].active / 2)} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
+                str += `<p style='text-align: center'>-${Math.ceil(Game.state.miningDrills[i].active / 5)} ${Game.state.miningDrills[i].fuel.toLowerCase()}/s</p>`
               }
             }
 

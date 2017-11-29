@@ -36,7 +36,7 @@ let technologies = [
     tooltip: `<h4>METALSMITHING I</h4><hr/><p><strong>Cost: 3 red science</strong></p><p><i>Enables the building of basic metal items</i></p><hr /><p>3 seconds</p>`,
     duration: 3,
     onFinish: {
-      unlockTech: ['Metalsmithing II', 'Autonomy I'],
+      unlockTech: ['Metalsmithing II', 'Autonomy I', 'Locomotion'],
       unlockAction: ['BUILD IRON GEAR', 'BUILD COPPER COIL']
     }
   },
@@ -115,9 +115,10 @@ let technologies = [
     price: {
       RED_SCIENCE: 30
     },
-    locked: 0,
+    locked: 1,
     tooltip: `<h4>LOCOMOTION</h4><hr/><p><strong>Cost: 15 red science</strong></p><p><i>Enables the building of trains (auto-exploration)</i></p><hr/><p>30 seconds</p>`,
-    duration: 30
+    duration: 30,
+    requires: 'Metalsmithing I'
   },
   {
     name: 'Enhanced Senses I',
