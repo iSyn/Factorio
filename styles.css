@@ -309,26 +309,26 @@ button:active {
 
 .constructor {
   border: 2px solid black;
-  width: 170px;
+  width: 200px;
   max-width: 200px;
-  min-width: 170px;
-  height: 250px;
+  min-width: 200px;
+  height: 200px;
   padding: 5px;
   margin-right: 5px;
 }
 
 .empty-constructor {
-  border: 4px dashed black;
-  width: 170px;
+  border: 2px dashed black;
+  width: 200px;
   max-width: 200px;
-  min-width: 170px;
-  height: 250px;
+  min-width: 200px;
+  height: 200px;
   padding: 5px;
   margin-right: 5px;
   background: white;
-  cursor: pointer;
 }
 
-.empty-constructor:hover {
-  filter: brightness(90%);
+.row {
+  display: flex;
+  flex-flow: row nowrap;
 }

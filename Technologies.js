@@ -127,7 +127,7 @@ let technologies = [
     },
     img: 'enhanced-senses-i',
     locked: 0,
-    tooltip: `<h4>ENHANCED SENSES</h4><hr><p><strong>Cost: 20 red science</strong></p><p><i>100% chance of finding something while exploring</i></p><hr/><p>20 seconds</p>`,
+    tooltip: `<h4>ENHANCED SENSES I</h4><hr><p><strong>Cost: 20 red science</strong></p><p><i>100% chance of finding something while exploring</i></p><hr/><p>20 seconds</p>`,
     duration: 20,
     onFinish: {
       unlockTech: ['Enhanced Senses II']
@@ -151,7 +151,7 @@ let technologies = [
       RED_SCIENCE: 100
     },
     img: 'intermediate-science',
-    locked: 0,
+    locked: 1,
     tooltip: `<h4>INTERMEDIATE SCIENCE</h4><hr/><p><strong>Cost: 100 red science</strong></p><p><i>Allows the creation of blue science</i></p><hr/><p>1 minute</p>`,
     duration: 60,
     onFinish: {
@@ -179,6 +179,26 @@ let technologies = [
   //   duration: 300,
   //   requires: 'Advanced Science'
   // }
+  {
+    name: 'Weightlifting I',
+    img: 'weightlifting-i',
+    price: {
+      RED_SCIENCE: 25
+    },
+    locked: 0,
+    tooltip: `<h4>WEIGHTLIFTING I</h4><hr /><p><strong>Cost: 25 red science</strong></p><p><i>Increases the amount of resources get on click</i></p>`,
+    duration: 15,
+  },
+  {
+    name: 'Weightlifting II',
+    price: {
+      RED_SCIENCE: 300
+    },
+    locked: 1,
+    tooltip: `<h4>WEIGHTLIFTING II</h4><hr /><p><strong>Cost: 300 red science</strong></p><p><i>Increases the amount of resources get on click</i></p>`,
+    duration: 60,
+    requires: 'Weightlifting I'
+  },
 
 
 ]
