@@ -9,9 +9,25 @@ html, body {
   height: 100%;
 }
 
+a {
+  color: black;
+}
+
+a:visited {
+  color: black;
+}
+
+footer {
+  height: 20px;
+  background: white;
+  color: black;
+  line-height: 20px;
+  text-align: center;
+}
+
 .page-container {
   position: relative;
-  height: 100%;
+  height: calc(100% - 20px);
   width: 100%;
   border: 10px solid black;
   display: flex;
