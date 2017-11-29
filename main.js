@@ -104,7 +104,8 @@ Game.launch = () => {
     },
 
     constructorInfo: {
-      owned: 0
+      owned: 0,
+      active: 0
     },
 
     selectedTab: 'ACTION',
@@ -552,8 +553,21 @@ Game.launch = () => {
       <br/>
       <h3>CONSTRUCTORS</h3>
       <hr/>
-      <div class="constructors-container">
-        <div class="constructor"></div>
+      <div style='margin-top: 5px;' class="constructors-container">
+    `
+
+    for (i = 0; i < Game.state.constructorInfo.active; i++) {
+      str += `
+        <div class="constructor">
+
+        </div>
+      `
+    }
+
+      str += `
+        <div class="empty-constructor" onclick='Game.state.constructorInfo.active++; Game.rebuildSelectedTab = 1'>
+          <i style='position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%)' class='fa fa-plus fa-1x'></i>
+        </div>
       </div>
     `
 
@@ -620,13 +634,13 @@ Game.launch = () => {
 
       if (!Game.state.tech.currentTech) {
         str += `
-          <h3 style='text-align: center; padding: 50px 0; opacity: .6;'>NO CURRENT TECH IN PROGRESS</h3>
+          <h3 style='text-align: center; padding: 50px 0; height: 140px; opacity: .6;'>NO CURRENT TECH IN PROGRESS</h3>
           <hr/>
         `
       } else {
         str += `
           <div class="current-tech-container">
-            <div class="current-tech-img"></div>
+            <div class="current-tech-img" style='background: url(./assets/${Game.state.tech.currentTech.img}.png); background-size: 100% 100%; image-rendering: pixelated;'></div>
             <div class="current-tech-info">
               <h4>${Game.state.tech.currentTech.name}</h4>
               <div class="progress-bar-container">
@@ -650,7 +664,7 @@ Game.launch = () => {
             if (Game.technologies[i].learned == 0) {
               if (Game.technologies[i].inProgress == false) {
                 str += `
-                  <div class="available-tech" onclick='Game.learnTech(${JSON.stringify(Game.technologies[i])})' onmouseover='Game.showTooltip("${Game.technologies[i].tooltip}")' onmouseout='Game.hideTooltip()'></div>
+                  <div style='background: url(./assets/${Game.technologies[i].img}.png); background-size: 100% 100%; image-rendering: pixelated;' class="available-tech" onclick='Game.learnTech(${JSON.stringify(Game.technologies[i])})' onmouseover='Game.showTooltip("${Game.technologies[i].tooltip}")' onmouseout='Game.hideTooltip()'></div>
                 `
               }
             }
@@ -666,7 +680,7 @@ Game.launch = () => {
           for (i in Game.technologies) {
             if (Game.technologies[i].locked == 1) {
               str += `
-                <div class="available-tech" onclick='Game.addLog("invalid", "Tech is locked")' onmouseover='Game.showTooltip("<h4>${Game.technologies[i].name.toUpperCase()}</h4><hr/><p>Requires: ${Game.technologies[i].requires}</p>")' onmouseout='Game.hideTooltip()'></div>
+                <div style='background: darkgrey;' class="available-tech" onclick='Game.addLog("invalid", "Tech is locked")' onmouseover='Game.showTooltip("<h4>${Game.technologies[i].name.toUpperCase()}</h4><hr/><p>Requires: ${Game.technologies[i].requires}</p>")' onmouseout='Game.hideTooltip()'></div>
               `
             }
           }
@@ -1141,6 +1155,8 @@ Game.launch = () => {
       Game.state.copperCoil -= 3
 
       Game.addLog("success", 'You made a constructor')
+
+      Game.rebuildInventory = 1
 
       Game.state.constructorInfo.owned++
     } else {

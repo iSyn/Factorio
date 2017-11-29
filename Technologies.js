@@ -2,6 +2,7 @@ let Technology = function(tech) {
   this.name = tech.name
   this.functionName = tech.name.replace(/ /g,'-').toLowerCase()
   this.desc = tech.desc
+  if (tech.img) this.img = tech.img
   this.price = tech.price
   this.tooltip = tech.tooltip
   if (!tech.learned) this.learned = 0
@@ -27,6 +28,7 @@ let technologies = [
   {
     name: 'Metalsmithing I',
     desc: 'Enables the building of basic metal items',
+    img: 'metalsmithing-i',
     price: {
       RED_SCIENCE: 3
     },
@@ -41,6 +43,7 @@ let technologies = [
   {
     name: 'Metalsmithing II',
     desc: 'Enables the building of intermediate metal items',
+    img: 'metalsmithing-ii',
     price: {
       RED_SCIENCE: 100
     },
@@ -52,6 +55,7 @@ let technologies = [
   {
     name: 'Autonomy I',
     desc: 'Enables the building of constructors',
+    img: 'automation-i',
     price: {
       RED_SCIENCE: 5
     },
@@ -67,6 +71,7 @@ let technologies = [
   {
     name: 'Autonomy II',
     desc: 'Enables the building of advanced constructors',
+    img: 'automation-ii',
     price: {
       RED_SCIENCE: 70,
       BLUE_SCIENCE: 50
@@ -79,6 +84,7 @@ let technologies = [
   {
     name: 'Fuel Efficiency I',
     desc: 'Fuel is now 2x more efficient',
+    img: 'fuel-efficiency-i',
     price: {
       RED_SCIENCE: 20
     },
@@ -92,6 +98,7 @@ let technologies = [
   {
     name: 'Fuel Efficiency II',
     desc: 'Fuel is now 2x even more efficient',
+    img: 'fuel-efficiency-ii',
     price: {
       RED_SCIENCE: 100,
       BLUE_SCIENCE: 50
@@ -104,6 +111,7 @@ let technologies = [
   {
     name: 'Locomotion',
     desc: 'Enables the building of trains',
+    img: 'locomotion',
     price: {
       RED_SCIENCE: 30
     },
@@ -116,11 +124,12 @@ let technologies = [
     price: {
       RED_SCIENCE: 10
     },
+    img: 'enhanced-senses-i',
     locked: 0,
     tooltip: `<h4>ENHANCED SENSES</h4><hr><p><strong>Cost: 20 red science</strong></p><p><i>100% chance of finding something while exploring</i></p><hr/><p>20 seconds</p>`,
     duration: 20,
     onFinish: {
-      unlockTech: ['Enhaced Senses II']
+      unlockTech: ['Enhanced Senses II']
     }
   },
   {
@@ -129,6 +138,7 @@ let technologies = [
       RED_SCIENCE: 40,
       BLUE_SCIENCE: 20
     },
+    img: 'enhanced-senses-ii',
     locked: 1,
     tooltip: `<h4>ENHANCED SENSES II</h4><hr /><p><strong>Cost: 40 red science, 20 blue science</strong></p><p><i>Increases the amount of ore found while exploring</i></p><p>1 minute</p>`,
     duration: 60,
@@ -139,6 +149,7 @@ let technologies = [
     price: {
       RED_SCIENCE: 100
     },
+    img: 'intermediate-science',
     locked: 0,
     tooltip: `<h4>INTERMEDIATE SCIENCE</h4><hr/><p><strong>Cost: 100 red science</strong></p><p><i>Allows the creation of blue science</i></p><hr/><p>1 minute</p>`,
     duration: 60,
