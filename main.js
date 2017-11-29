@@ -142,6 +142,12 @@ Game.launch = () => {
     Game.rebuildWorldResources = 1
   }
 
+  Game.playSound = (snd) => {
+    let sfx = new Audio(`./assets/${snd}.wav`)
+    sfx.volume = 0.5
+    sfx.play()
+  }
+
   Game.earn = (type, total) => {
 
     if (type == 'wood' || type == 'stone' || type == 'coal' || type == 'copper' || type == 'iron') {
@@ -244,6 +250,7 @@ Game.launch = () => {
     } else {
       Game.recalculateRemainingTechDuration = 0
       Game.addLog('success', `You have completed researching: ${Game.state.tech.currentTech.name}`)
+      Game.playSound('tech-complete')
       let tech = select(Game.technologies, Game.state.tech.currentTech.name)
       tech.learned = 1
       tech.inProgress = false
@@ -891,6 +898,8 @@ Game.launch = () => {
         if (Game.state.redScience >= selectedTech.price.RED_SCIENCE) {
           Game.state.redScience -= selectedTech.price.RED_SCIENCE
           Game.rebuildInventory = 1
+
+          Game.playSound('start-tech')
 
           Game.state.tech.currentTech = selectedTech
           Game.state.tech.currentTech.currentDuration = selectedTech.duration
