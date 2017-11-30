@@ -17,7 +17,7 @@ let actions = [
     tab: 'GATHER',
     tooltip: '<p>Look around your surroundings</p>',
     onclick: 'Game.explore',
-    locked: 0,
+    locked: 1,
   }, {
     name: 'CHOP TREE',
     tab: 'GATHER',
@@ -71,7 +71,7 @@ let actions = [
   }, {
     name: 'BUILD MINING DRILL',
     tab: 'BUILD',
-    tooltip: '<p><strong>Cost: 100 wood, 100 stone</strong></p><p><i>Allows for automation</i></p>',
+    tooltip: '<p><strong>Cost: 20 wood, 20 stone</strong></p><p><i>Allows for automation</i></p>',
     onclick: 'Game.buildMiningDrill',
     locked: 0
   }, {

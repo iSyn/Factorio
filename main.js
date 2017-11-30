@@ -121,13 +121,19 @@ Game.launch = () => {
       overallTotalCoal: 0,
       overallTotalCopper: 0,
       overallTotalIron: 0,
+      totalActionsManuallyFired: 0,
+      totalBuildsManuallyFired: 0,
+    },
+
+    tutorialChecks: {
+
     }
   }
 
   Game.load = () => {
 
-    setTimeout(() => {Game.addLog('story', 'You have just crash landed on an alien planet.')}, 1000)
-    setTimeout(() => {Game.addLog('story', 'Your goal is to build a rocket ship and escape.')}, 3000)
+    setTimeout(() => {Game.addLog('story', 'Doing things takes time and energy...')}, 1000)
+    setTimeout(() => {Game.addLog('story', 'Why not build things to do the things for you.')}, 3000)
 
     actions.forEach((action) => {
       new Action(action)
@@ -177,7 +183,9 @@ Game.launch = () => {
 
   Game.earnPassiveResources = () => {
 
-    let gain, loss, selectedResource;
+    let gain = 0
+    let loss = 0
+    let selectedResource = ''
 
     // DRILLS
     for (i in Game.state.miningDrills) {
@@ -195,12 +203,34 @@ Game.launch = () => {
         if (Game.state[resourceNeeded] >= loss) {
           // IF WORLD RESOURCE IS MORE THAN 0
           if (selectedResource.amount > 0) {
-            if (selectedResource.amount >= gain) {
-              Game.earn(drill.type.toLowerCase(), gain)
-              Game.state[resourceNeeded] -= loss
-            } else {
-              Game.earn(drill.type.toLowerCase(), selectedResource.amount)
-              Game.state[resourceNeeded] -= loss
+            if (drill.type != 'COAL') {
+              if (selectedResource.amount >= gain) {
+                Game.earn(drill.type.toLowerCase(), gain)
+                Game.state[resourceNeeded] -= loss
+              } else {
+                Game.earn(drill.type.toLowerCase(), selectedResource.amount)
+                Game.state[resourceNeeded] -= loss
+              }
+            } else { // IF ON COAL
+              if (selectedResource.amount >= gain) {
+                // ADD COAL TO INVENTORY
+                Game.state.coal += gain
+                // TAKE AWAY FROM WORLD RESOURCES
+                Game.state.worldResources[2].amount -= gain
+                // TAKE AWAY FUEL
+                Game.state.coal -= loss
+                // REBUILD RESOURCES
+                Game.rebuildWorldResources = 1
+              } else {
+                // ADD COAL TO INVENTORY
+                Game.state.coal += selectedResource.amount
+                // TAKE AWAY FROM WORLD RESOURCES
+                Game.state.worldResources[2].amount = 0
+                // TAKE AWAY FUEL
+                Game.state.coal -= loss
+                // REBUILD
+                Game.rebuildWorldResources = 1
+              }
             }
           }
         }
@@ -305,18 +335,19 @@ Game.launch = () => {
   Game.buildWorldResources = () => {
     let str = ''
 
-    for (i in Game.state.worldResources) {
-      if (Game.state.worldResources[i].amount > 0) {
-        str += `
-          <div class="inventory-item">
-            <p class="inventory-item-name">${Game.state.worldResources[i].name}</p>
-            <p class="inventory-item-amount">${Game.state.worldResources[i].amount}</p>
-          </div>
-        `
+    if (s('.world-resources-container')) {
+      for (i in Game.state.worldResources) {
+        if (Game.state.worldResources[i].amount > 0) {
+          str += `
+            <div class="inventory-item">
+              <p class="inventory-item-name">${Game.state.worldResources[i].name}</p>
+              <p class="inventory-item-amount">${Game.state.worldResources[i].amount}</p>
+            </div>
+          `
+        }
       }
+      s('.world-resources-container').innerHTML = str
     }
-
-    s('.world-resources-container').innerHTML = str
 
     Game.rebuildWorldResources = 0
   }
@@ -446,14 +477,20 @@ Game.launch = () => {
   }
 
   Game.changeTab = (tab) => {
-    s('.tab-content').classList.remove('fadeIn')
-    Game.state.selectedTab = tab
-    Game.rebuildTabs = 1
-    Game.rebuildSelectedTab = 1
-    s('.tab-content').classList.add('fadeIn')
-    setTimeout(() => {
+
+    let currentTab = Game.state.selectedTab
+
+    if (currentTab != tab) {
       s('.tab-content').classList.remove('fadeIn')
-    }, 500)
+      Game.state.selectedTab = tab
+      Game.rebuildTabs = 1
+      Game.rebuildSelectedTab = 1
+      s('.tab-content').classList.add('fadeIn')
+      setTimeout(() => {
+        s('.tab-content').classList.remove('fadeIn')
+      }, 500)
+    }
+
   }
 
   Game.buildFurnaces = () => {
@@ -688,7 +725,6 @@ Game.launch = () => {
     }
 
     if (selectedTab == 'BUILD') {
-
       str += `<div class='content'>`
 
       for (i in Game.actions) {
@@ -697,9 +733,9 @@ Game.launch = () => {
           if (!action.locked) {
             if (action.nextLine) {
               str += `<div class="next-line-push"></div>`
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `<div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             } else {
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `<div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             }
           }
         }
@@ -774,18 +810,6 @@ Game.launch = () => {
     }
 
     s('.tab-content').innerHTML = str
-
-    // if (Game.state.selectedTab == 'ACTION') {
-    //   for (i in Game.state.emptyConstructor.materials) {
-    //     let it = Game.state.emptyConstructor.materials[i]
-    //     if (it.material) {
-    //       s(`#constructor-materials-${i}`).value = it.material
-    //     }
-    //     if (it.amount) {
-    //       s(`#constructor-materials-amount-${i}`).value = it.amount
-    //     }
-    //   }
-    // }
 
     Game.rebuildSelectedTab = 0
   }
@@ -1023,10 +1047,67 @@ Game.launch = () => {
   Game.fireAction = (actionNum, func) => {
     let selectedAction = Game.actions[actionNum]
 
-    if (!selectedAction.currentCooldown) {
-      selectedAction.currentCooldown = selectedAction.cooldown
+    if (selectedAction.tab == 'GATHER') {
+      if (!selectedAction.currentCooldown) {
+        selectedAction.currentCooldown = selectedAction.cooldown
+        Game.state.stats.totalActionsManuallyFired++
+        func()
+        if (Game.state.stats.totalActionsManuallyFired == 3) Game.unlockWorldResources()
+      }
+    } else {
+      Game.state.stats.totalBuildsManuallyFired++
       func()
+
+
+      if (Game.state.stats.totalBuildsManuallyFired == 1) Game.unlockBuildQueue()
     }
+  }
+
+  Game.unlockWorldResources = () => {
+
+
+    Game.addLog('story', 'Your world has limited resources...')
+    setTimeout(() => {Game.addLog('story', 'Explore your surroundings to find more')}, 2000)
+
+    let el = s('.page-content-left')
+
+    el.innerHTML = `
+      <div class="page-content" style='height: 60%; border-bottom: 6px solid black'>
+        <h3>INVENTORY</h3>
+        <hr/>
+        <div class="inventory-container"></div>
+      </div>
+      <div id='world-resources-page-content' class="page-content">
+        <h3>WORLD RESOURCES</h3>
+        <hr/>
+        <div class="world-resources-container"></div>
+      </div>
+    `
+
+    s('#world-resources-page-content').classList.add('fadeIn-slow')
+
+    let action = select(Game.actions, 'EXPLORE')
+    action.locked = 0;
+
+    Game.rebuildInventory = 1
+    Game.rebuildWorldResources = 1
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.unlockBuildQueue = () => {
+    let el = s('.page-content-right')
+
+    el.innerHTML += `
+      <div id='build-queue' class="page-content">
+        <h3>BUILD QUEUE</h3>
+        <hr/>
+      </div>
+    `
+
+    s('#logs').style.height = '75%'
+    s('#logs').style.borderBottom = '6px solid black'
+
+    s('#build-queue').classList.add('fadeIn-slow')
   }
 
   Game.updateCooldown = (actionNum) => {
@@ -1172,12 +1253,15 @@ Game.launch = () => {
   }
 
   Game.buildMiningDrill = () => {
-    if (Game.state.wood < 100) Game.addLog('invalid', "You don't have enough wood")
-    if (Game.state.stone < 100) Game.addLog('invalid', "You don't have enough stone")
 
-    if (Game.state.wood >= 100 && Game.state.stone >= 100) {
-      Game.spend('wood', 100)
-      Game.spend('stone', 100)
+    // let action = select(Game.actions, 'BUILD MINING DRILL')
+
+    if (Game.state.wood < 20) Game.addLog('invalid', "You don't have enough wood")
+    if (Game.state.stone < 20) Game.addLog('invalid', "You don't have enough stone")
+
+    if (Game.state.wood >= 20 && Game.state.stone >= 20) {
+      Game.spend('wood', 20)
+      Game.spend('stone', 20)
       Game.state.miningDrillsInfo.owned++
       Game.state.miningDrillsInfo.inactive++
       Game.rebuildSelectedTab = 1
@@ -1386,7 +1470,7 @@ Game.launch = () => {
     } else if (type == 'invalid') {
       newLog.innerHTML = `<p style='color: firebrick'>${amount}</p>`
     } else if (type == 'story') {
-      newLog.innerHTML = `<i style='color: slateblue'>${amount}</i>`
+      newLog.innerHTML = `<i style='color: slateblue;'>${amount}</i>`
     } else if (type == 'craft') {
       let words = ['created', 'crafted', 'made']
       newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
