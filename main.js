@@ -100,7 +100,7 @@ Game.launch = () => {
     },
 
     emptyConstructor: {
-      materials: []
+      materials: 1
     },
 
     constructorInfo: {
@@ -619,43 +619,31 @@ Game.launch = () => {
     return str
   }
 
-  Game.addConstructorMaterial = () => {
-    if (Game.state.emptyConstructor.materials.length < 2) {
-      Game.state.emptyConstructor.materials.push({
-        material: null,
-        amount: null
-      })
-      Game.rebuildSelectedTab = 1
-    } else {
-      Game.addLog('invalid', 'You can only have 2 materials')
-    }
-  }
-
   Game.changeConstructorMaterial = (num) => {
-    let selected = s(`#constructor-materials-${num}`)
+    // let selected = s(`#constructor-materials-${num}`)
 
 
-    if (!Game.state.emptyConstructor.materials[num]) {
-      Game.state.emptyConstructor.materials.push({
-        material: selected.value,
-        amount: null
-      })
-    } else {
-      Game.state.emptyConstructor.materials[num].material = selected.value
-    }
+    // if (!Game.state.emptyConstructor.materials[num]) {
+    //   Game.state.emptyConstructor.materials.push({
+    //     material: selected.value,
+    //     amount: null
+    //   })
+    // } else {
+    //   Game.state.emptyConstructor.materials[num].material = selected.value
+    // }
   }
 
   Game.changeConstructorMaterialAmount = (num) => {
-    let selected = s(`#constructor-materials-amount-${num}`)
+    // let selected = s(`#constructor-materials-amount-${num}`)
 
-    if (!Game.state.emptyConstructor.materials[num]) {
-      Game.state.emptyConstructor.materials.push({
-        material: null,
-        amount: selected.value
-      })
-    } else {
-      Game.state.emptyConstructor.materials[num].amount = selected.value
-    }
+    // if (!Game.state.emptyConstructor.materials[num]) {
+    //   Game.state.emptyConstructor.materials.push({
+    //     material: null,
+    //     amount: selected.value
+    //   })
+    // } else {
+    //   Game.state.emptyConstructor.materials[num].amount = selected.value
+    // }
   }
 
   Game.actions = []
@@ -676,9 +664,17 @@ Game.launch = () => {
           if (!action.locked) {
             if (action.nextLine) {
               str += '<div class="next-line-push"></div>'
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `
+                <div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>
+                  <div id='action-${i}' class="action-progress"></div>
+                  <div class="action-name">${action.name}</div>
+                </div>`
             } else {
-              str += `<div class="action" onclick='${action.onclick}()' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `
+                <div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>
+                  <div id='action-${i}' class="action-progress"></div>
+                  <div class="action-name">${action.name}</div>
+                </div>`
             }
           }
         }
@@ -779,17 +775,17 @@ Game.launch = () => {
 
     s('.tab-content').innerHTML = str
 
-    if (Game.state.selectedTab == 'ACTION') {
-      for (i in Game.state.emptyConstructor.materials) {
-        let it = Game.state.emptyConstructor.materials[i]
-        if (it.material) {
-          s(`#constructor-materials-${i}`).value = it.material
-        }
-        if (it.amount) {
-          s(`#constructor-materials-amount-${i}`).value = it.amount
-        }
-      }
-    }
+    // if (Game.state.selectedTab == 'ACTION') {
+    //   for (i in Game.state.emptyConstructor.materials) {
+    //     let it = Game.state.emptyConstructor.materials[i]
+    //     if (it.material) {
+    //       s(`#constructor-materials-${i}`).value = it.material
+    //     }
+    //     if (it.amount) {
+    //       s(`#constructor-materials-amount-${i}`).value = it.amount
+    //     }
+    //   }
+    // }
 
     Game.rebuildSelectedTab = 0
   }
@@ -1024,6 +1020,31 @@ Game.launch = () => {
     Game.rebuildSelectedTab = 1
   }
 
+  Game.fireAction = (actionNum, func) => {
+    let selectedAction = Game.actions[actionNum]
+
+    if (!selectedAction.currentCooldown) {
+      selectedAction.currentCooldown = selectedAction.cooldown
+      func()
+    }
+  }
+
+  Game.updateCooldown = (actionNum) => {
+    selectedAction = Game.actions[actionNum]
+
+    if (selectedAction.currentCooldown > 0) {
+      selectedAction.currentCooldown -= 30
+    } else {
+      selectedAction.currentCooldown = null
+    }
+
+    if (Game.state.selectedTab == 'ACTION') {
+      let progressBar = s(`#action-${actionNum}`)
+      let barWidth = (selectedAction.currentCooldown/selectedAction.cooldown * 100)
+      progressBar.style.width = barWidth + '%'
+    }
+  }
+
   Game.explore = () => {
     // // Game.addLog(null, 'You explore your surroundings but found nothing notable.')
     // let amounts = [1, 5, 10]
@@ -1054,6 +1075,8 @@ Game.launch = () => {
   Game.chopTree = () => {
     // Math.floor(Math.random() * (max - min + 1)) + min
     let amount = Math.floor(Math.random() * (7 - 5 + 1)) + 5
+
+    console.log('chopping tree')
 
     if (Game.state.worldResources[0].amount >= amount) {
       Game.earn('wood', amount)
@@ -1251,20 +1274,102 @@ Game.launch = () => {
   }
 
   Game.buildConstructor = () => {
-    if (Game.state.ironPlate >= 5 && Game.state.ironGear >= 2 && Game.state.copperCoil >= 3) {
-      Game.state.ironPlate -= 5
-      Game.state.ironGear -= 2
-      Game.state.copperCoil -= 3
+    let div = document.createElement('div')
 
-      Game.addLog("success", 'You made a constructor')
+    div.classList.add('wrapper')
 
-      Game.rebuildInventory = 1
+    let str = `
+      <div class="constructor-modal-container">
+        <div style='display: flex; flex-flow: row nowrap; align-items: center'>
+          <h2 style='flex-grow: 1; text-align: center'>CONSTRUCTOR</h2>
+          <p><i onclick='Game.removeWrapper(); Game.state.emptyConstructor.materials=1' style='cursor: pointer;' class='fa fa-times fa-1x'></i></p>
+        </div>
+        <hr/>
+        <br/>
+        `
 
-      Game.state.constructorInfo.owned++
+        str += '<div class="constructor-materials-container">'
+
+        str += `
+          <div class="row">
+            <select id='constructor-materials-1' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(1)'>
+              <option selected disabled>Select a material</option>
+              <option value="wood">Wood</option>
+              <option value="stone">Stone</option>
+              <option value="coal">Coal</option>
+              <option value="copper">Copper</option>
+              <option value="iron">Iron</option>
+              <option value="copperPlate">Copper Plate</option>
+              <option value="ironPlate">Iron Plate</option>
+              <option value="copperCoil">Copper Coil</option>
+              <option value="ironPlate">Iron Plate</option>
+            </select>
+            <input id='constructor-materials-amount-1' onchange='Game.changeConstructorMaterialAmount(0)' style='width: 40px;' type="number" min='1' max='10'/>
+          </div>
+        `
+
+        str += '</div>'
+
+        str += `<p style='text-align: center;'><i onclick='Game.addConstructorMaterial()' style='cursor: pointer; margin-top: 3px;' class='fa fa-plus-square-o fa-2x'></i></p>`
+
+        str += `<button>BUILD</button>`
+
+        str += `</div>`
+
+        div.innerHTML = str
+
+    s('body').append(div)
+
+    // if (Game.state.ironPlate >= 5 && Game.state.ironGear >= 2 && Game.state.copperCoil >= 3) {
+    //   Game.state.ironPlate -= 5
+    //   Game.state.ironGear -= 2
+    //   Game.state.copperCoil -= 3
+
+    //   Game.addLog("success", 'You made a constructor')
+
+    //   Game.rebuildInventory = 1
+
+    //   Game.state.constructorInfo.owned++
+    // } else {
+    //   if (Game.state.ironPlate < 5) Game.addLog('invalid', 'You do not have enough iron plates')
+    //   if (Game.state.ironGear < 2) Game.addLog('invalid', 'You do not have enough iron gears')
+    //   if (Game.state.copperCoil < 3) Game.addLog('invalid', 'You do not have enough copper coils')
+    // }
+  }
+
+  Game.addConstructorMaterial = () => {
+
+    let firstValue, firstValueAmount, secondValue, secondValueAmount
+    firstValue = s(`#constructor-materials-1`).value
+    firstValueAmount = s('#constructor-materials-amount-1').value
+    if (s(`#constructor-materials-2`)) {secondValue = s(`#constructor-materials-2`).value; secondValueAmount = s(`#constructor-materials-amount-2`).value}
+
+    if (Game.state.emptyConstructor.materials < 2) {
+      Game.state.emptyConstructor.materials += 1
+
+      s('.constructor-materials-container').innerHTML +=  `
+        <div class="row">
+          <select id='constructor-materials-${Game.state.emptyConstructor.materials}' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(${Game.state.emptyConstructor.materials})'>
+            <option selected disabled>Select a material</option>
+            <option value="wood">Wood</option>
+            <option value="stone">Stone</option>
+            <option value="coal">Coal</option>
+            <option value="copper">Copper</option>
+            <option value="iron">Iron</option>
+            <option value="copperPlate">Copper Plate</option>
+            <option value="ironPlate">Iron Plate</option>
+            <option value="copperCoil">Copper Coil</option>
+            <option value="ironPlate">Iron Plate</option>
+          </select>
+          <input id='constructor-materials-amount-${Game.state.emptyConstructor.materials}' onchange='Game.changeConstructorMaterialAmount(${Game.state.emptyConstructor.materials})' style='width: 40px;' type="number" min='1' max='10'/>
+        </div>
+      `
+
+      s(`#constructor-materials-1`).value = firstValue
+      s(`#constructor-materials-amount-1`).value = firstValueAmount
+      if (secondValue) {s(`#constructor-materials-2`).value = secondValue; s(`#constructor-materials-amount-2`).value = secondValueAmount}
     } else {
-      if (Game.state.ironPlate < 5) Game.addLog('invalid', 'You do not have enough iron plates')
-      if (Game.state.ironGear < 2) Game.addLog('invalid', 'You do not have enough iron gears')
-      if (Game.state.copperCoil < 3) Game.addLog('invalid', 'You do not have enough copper coils')
+      Game.addLog('invalid', 'You can only have a max of 2 materials')
     }
   }
 
@@ -1294,6 +1399,13 @@ Game.launch = () => {
     s('.logs-container').prepend(newLog)
   }
 
+  Game.removeWrapper = () => {
+    let wrappers = document.querySelectorAll('.wrapper');
+    wrappers.forEach((wrapper) => {
+      wrapper.remove()
+    })
+  }
+
   let counter = 0
   Game.logic = () => {
     counter++
@@ -1305,6 +1417,14 @@ Game.launch = () => {
     if (Game.rebuildSelectedTab) Game.buildSelectedTab()
     if (Game.rebuildWorldResources) Game.buildWorldResources()
     if (Game.recalculateRemainingTechDuration) Game.calculateRemainingTechDuration()
+
+    for (i in Game.actions) {
+      if (Game.actions[i].cooldown) {
+        if (Game.actions[i].currentCooldown != null) {
+          Game.updateCooldown(i)
+        }
+      }
+    }
 
     setTimeout(Game.logic, 1000/30)
   }
@@ -1329,6 +1449,8 @@ Game.launch = () => {
       Game.technologies[i].duration = 1
     }
   }
+
+
 
 
 }

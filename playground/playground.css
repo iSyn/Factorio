@@ -1,0 +1,26 @@
+* {
+  font-family: 'Arial';
+}
+
+.buttons-container {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.action-container {
+  border: 2px solid black;
+  padding: 10px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  position: relative;
+  cursor: pointer;
+}
+
+.action-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: rgba(0,0,0,0.3)
+}

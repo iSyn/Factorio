@@ -140,6 +140,16 @@ footer {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  position: relative;
+}
+
+.action-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: rgba(0,0,0,0.3)
 }
 
 button {
@@ -157,11 +167,11 @@ button:active {
 
 .action:hover {
   text-decoration: underline;
-  filter: brightness(80%);
+  /*filter: brightness(80%);*/
 }
 
 .action:active {
-  filter: brightness(65%);
+  /*filter: brightness(65%);*/
 }
 
 .tooltip {
@@ -331,4 +341,45 @@ button:active {
 .row {
   display: flex;
   flex-flow: row nowrap;
+}
+
+.wrapper {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.2)
+}
+
+.constructor-modal-container {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 300px;
+  width: 300px;
+  background-color: white;
+  border: 5px solid black;
+  padding: 5px;
+}
+
+.constructor-modal-container button {
+  font-size: x-large;
+  border: 2px solid black;
+  border-radius: 0px;
+  padding: 5px 15px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 5%;
+  cursor: pointer;
+}
+
+.row select {
+  font-size: medium;
+}
+
+.fa-plus-square-o:hover {
+  opacity: .7
 }

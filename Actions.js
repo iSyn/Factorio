@@ -5,6 +5,8 @@ let Action = function(action) {
   this.onclick = action.onclick
   this.locked = action.locked
   if (action.nextLine) this.nextLine = action.nextLine
+  action.cooldown ? this.cooldown = action.cooldown * 1000 : this.cooldown = 2 * 1000
+  action.currentCooldown ? this.currentCooldown = action.currentCooldown : this.currentCooldown = null
 
   Game.actions.push(this)
 }
@@ -22,25 +24,25 @@ let actions = [
     tooltip: '<p>Gain 5-7 wood</p>',
     onclick: 'Game.chopTree',
     locked: 0,
-    nextLine: true
+    nextLine: true,
   }, {
     name: 'MINE ROCK',
     tab: 'GATHER',
     tooltip: '<p>Gain 3-5 stone</p>',
     onclick: 'Game.mineRock',
-    locked: 0
+    locked: 0,
   }, {
     name: 'MINE COAL',
     tab: 'GATHER',
     tooltip: '<p>Gain 1 coal</p>',
     onclick: 'Game.mineCoal',
-    locked: 1
+    locked: 1,
   }, {
     name: 'MINE COPPER',
     tab: 'GATHER',
     tooltip: '<p>Gain 1 copper</p>',
     onclick: 'Game.mineCopper',
-    locked: 1
+    locked: 1,
   }, {
     name: 'MINE IRON',
     tab: 'GATHER',
