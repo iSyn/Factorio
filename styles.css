@@ -93,6 +93,10 @@ footer {
   font-size: large;
 }
 
+.log p {
+  font-size: large;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -140,17 +144,6 @@ footer {
   display: flex;
   flex-flow: row wrap;
   padding-top: 5px;
-}
-
-.build-que-container {
-  border-left: 2px solid black;
-  border-bottom: 2px solid black;
-  height: 100%;
-  width: 170px;
-}
-
-.build-que-container h3 {
-  text-align: center;
 }
 
 .action {
@@ -407,3 +400,24 @@ button:active {
 .fa-plus-square-o:hover {
   opacity: .7
 }
+
+#build-queue {
+  height: 25%;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.build-queue-container {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+
+
+
+
+
+
+
+
+

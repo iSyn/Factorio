@@ -1,12 +1,17 @@
 let Action = function(action) {
   this.name = action.name
   this.tab = action.tab
+  if (this.tab == 'BUILD') {
+    this.name = `BUILD ${action.name}`
+    this.itemName = action.name
+  }
   this.tooltip = action.tooltip
   this.onclick = action.onclick
   this.locked = action.locked
+  if (action.price) this.price = action.price
   if (action.nextLine) this.nextLine = action.nextLine
   action.cooldown ? this.cooldown = action.cooldown * 1000 : this.cooldown = 2 * 1000
-  action.currentCooldown ? this.currentCooldown = action.currentCooldown : this.currentCooldown = null
+  // action.currentCooldown ? this.currentCooldown = action.currentCooldown : this.currentCooldown = null
 
   Game.actions.push(this)
 }
@@ -69,51 +74,79 @@ let actions = [
     onclick: 'Game.smeltIron',
     locked: 1
   }, {
-    name: 'BUILD MINING DRILL',
+    name: 'MINING DRILL',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'wood',
+        amount: 20
+      }, {
+        type: 'stone',
+        amount: 20
+      }
+    ],
     tooltip: '<p><strong>Cost: 20 wood, 20 stone</strong></p><p><i>Allows for automation</i></p>',
     onclick: 'Game.buildMiningDrill',
-    locked: 0
+    locked: 0,
+    cooldown: 5
   }, {
-    name: 'BUILD FURNACE',
+    name: 'FURNACE',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'stone',
+        amount: 100
+      }, {
+        type: 'coal',
+        amount: 25
+      }
+    ],
     tooltip: '<p><strong>Cost: 100 stone, 25 coal</strong></p><p><i>Smelts raw materials</i></p>',
     onclick: 'Game.buildFurnace',
     locked: 0
   }, {
-    name: 'BUILD LAB',
+    name: 'LAB',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'stone',
+        amount: 50
+      }, {
+        type: 'iron',
+        amount: 10
+      }
+    ],
     tooltip: '<p><strong>Cost: 50 stone, 10 iron</strong></p><p><i>Enables technology</i></p>',
     onclick: 'Game.buildLab',
     locked: 0,
   }, {
-    name: 'BUILD CONSTRUCTOR',
+    name: 'CONSTRUCTOR',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 5 iron plates, 2 iron gears, 3 copper coils</strong></p><p><i>Automate the constructing of an item</i></p>',
     onclick: 'Game.buildConstructor',
     locked: 1
   }, {
-    name: 'BUILD RED SCIENCE',
+    name: 'RED SCIENCE',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
     onclick: 'Game.buildRedScience',
     locked: 1,
     nextLine: true
   }, {
-    name: 'BUILD BLUE SCIENCE',
+    name: 'BLUE SCIENCE',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 3 copper coils, 3 iron screws</strong></p><p><i>Used for intermediate science</i></p>',
     onclick: 'Game.buildBlueScience',
     locked: 1,
   }, {
-    name: 'BUILD IRON GEAR',
+    name: 'IRON GEAR',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 2 iron plates</strong></p><p><i>Used for crafting</i></p>',
     onclick: 'Game.buildIronGear',
     locked: 1,
     nextLine: true
   }, {
-    name: 'BUILD COPPER COIL',
+    name: 'COPPER COIL',
     tab: 'BUILD',
     tooltip: '<p><strong>Cost: 2 copper plates</strong></p><p><i>Used for crafting</i></p>',
     onclick: 'Game.buildCopperCoil',

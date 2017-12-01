@@ -125,9 +125,7 @@ Game.launch = () => {
       totalBuildsManuallyFired: 0,
     },
 
-    tutorialChecks: {
-
-    }
+    buildQueue: []
   }
 
   Game.load = () => {
@@ -490,7 +488,6 @@ Game.launch = () => {
         s('.tab-content').classList.remove('fadeIn')
       }, 500)
     }
-
   }
 
   Game.buildFurnaces = () => {
@@ -733,9 +730,9 @@ Game.launch = () => {
           if (!action.locked) {
             if (action.nextLine) {
               str += `<div class="next-line-push"></div>`
-              str += `<div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `<div class="action" onclick='Game.addBuildQueue(${i})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             } else {
-              str += `<div class="action" onclick='Game.fireAction(${i}, ${action.onclick})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
+              str += `<div class="action" onclick='Game.addBuildQueue(${i})' onmouseover='Game.showTooltip("${action.tooltip}")' onmouseout='Game.hideTooltip()'>${action.name}</div>`
             }
           }
         }
@@ -1055,10 +1052,7 @@ Game.launch = () => {
         if (Game.state.stats.totalActionsManuallyFired == 3) Game.unlockWorldResources()
       }
     } else {
-      Game.state.stats.totalBuildsManuallyFired++
       func()
-
-
       if (Game.state.stats.totalBuildsManuallyFired == 1) Game.unlockBuildQueue()
     }
   }
@@ -1101,6 +1095,7 @@ Game.launch = () => {
       <div id='build-queue' class="page-content">
         <h3>BUILD QUEUE</h3>
         <hr/>
+        <div class="build-queue-container"></div>
       </div>
     `
 
@@ -1123,6 +1118,92 @@ Game.launch = () => {
       let progressBar = s(`#action-${actionNum}`)
       let barWidth = (selectedAction.currentCooldown/selectedAction.cooldown * 100)
       progressBar.style.width = barWidth + '%'
+    }
+  }
+
+  Game.addBuildQueue = (actionNum) => {
+
+    let action = Game.actions[actionNum]
+
+    let building = {
+      name: action.name,
+      itemName: action.itemName,
+      cooldown: action.cooldown,
+      onComplete: action.onclick
+    }
+
+    let success = true
+
+    // CHECKS IF YOU HAVE ENOUGH RESOURCES
+    for (i=0; i<action.price.length; i++) {
+      if (Game.state[action.price[i].type] >= action.price[i].amount) {
+        sucess = true
+      } else {
+        success = false
+      }
+    }
+
+    if (success) {
+
+      // CHECK IF QUEUE SHOWS
+      if (!s('#build-queue')) {
+        Game.unlockBuildQueue()
+      }
+
+      // ADD BUILDING TO QUEUE
+      Game.state.buildQueue.push(building)
+      console.log(Game.state.buildQueue)
+
+      // TAKE PRICE
+      for (i=0; i<action.price.length; i++) {
+        Game.state[action.price[i].type] -= action.price[i].amount
+      }
+
+      Game.rebuildInventory = 1
+    }
+  }
+
+  Game.updateBuildQueue = () => {
+
+    let buildQueue = s('.build-queue-container')
+    let str = ''
+
+    // SET FIRST COOLDOWN
+    if (!Game.state.buildQueue[0].currentCooldown) {
+      Game.state.buildQueue[0].currentCooldown = Game.state.buildQueue[0].cooldown
+    }
+
+    for (i in Game.state.buildQueue) {
+      if (i == 0) {
+        str += `
+          <div>
+            <h4>BUILDING: ${Game.state.buildQueue[i].itemName}</h4>
+            <div style='display: flex; flex-flow: row nowrap;'>
+              <h4>PROGRESS: </h4>
+              <div class="building-progress-container" style='flex-grow: 1'>
+                <div class="building-progress" style='width: 25%; height: 100%; background: black'></div>
+              </div>
+            </div>
+            <hr/>
+          </div>
+        `
+      } else {
+        str += `<p>${Game.state.buildQueue[i].itemName}</p>`
+      }
+    }
+
+    buildQueue.innerHTML = str
+
+    if (Game.state.buildQueue[0].currentCooldown >= 0) {
+      Game.state.buildQueue[0].currentCooldown -= 30
+      let barWidth = 100 - (Game.state.buildQueue[0].currentCooldown/Game.state.buildQueue[0].cooldown * 100)
+      let progressBar = s('.building-progress')
+      progressBar.style.width = barWidth + '%'
+    } else {
+      Game.state.buildQueue.shift()
+      if (Game.state.buildQueue.length == 0) {
+        buildQueue.innerHTML = `<p style='text-align: center; opacity: 0.6;'>No buildings in queue</p>`
+      }
     }
   }
 
@@ -1253,7 +1334,6 @@ Game.launch = () => {
   }
 
   Game.buildMiningDrill = () => {
-
     // let action = select(Game.actions, 'BUILD MINING DRILL')
 
     if (Game.state.wood < 20) Game.addLog('invalid', "You don't have enough wood")
@@ -1264,6 +1344,7 @@ Game.launch = () => {
       Game.spend('stone', 20)
       Game.state.miningDrillsInfo.owned++
       Game.state.miningDrillsInfo.inactive++
+      Game.state.stats.totalBuildsManuallyFired++
       Game.rebuildSelectedTab = 1
       Game.addLog('craft', 'mining drill')
     }
@@ -1278,6 +1359,7 @@ Game.launch = () => {
       Game.spend('coal', 25)
       Game.state.furnacesInfo.owned++
       Game.state.furnacesInfo.inactive++
+      Game.state.stats.totalBuildsManuallyFired++
       Game.addLog('craft', 'furnace')
 
       // UNLOCK NEW BUTTONS
@@ -1297,6 +1379,7 @@ Game.launch = () => {
       Game.state.copperPlate--
       Game.state.ironPlate--
       Game.state.redScience++
+      Game.state.stats.totalBuildsManuallyFired++
 
       Game.addLog('success', 'You crafted a red science')
 
@@ -1315,6 +1398,7 @@ Game.launch = () => {
       Game.spend('stone', 50)
       Game.spend('iron', 10)
       Game.state.labs.owned++
+      Game.state.stats.totalBuildsManuallyFired++
 
       let redScience = select(Game.actions, "BUILD RED SCIENCE")
       if (redScience.locked == 1) redScience.locked = 0
@@ -1463,14 +1547,14 @@ Game.launch = () => {
 
     if (type == 'mine') {
       let words = ['excavated', 'mined', 'smashed', 'got']
-      newLog.innerHTML = `You ${words[choose(words)]} ${amount} stones`
+      newLog.innerHTML = `<p>You ${words[choose(words)]} ${amount} stones</p>`
     } else if (type == 'wood') {
       let words = ['chopped', 'harvested', 'cut', 'cut down']
-      newLog.innerHTML = `You ${words[choose(words)]} ${amount} wood`
+      newLog.innerHTML = `<p>You ${words[choose(words)]} ${amount} wood</p>`
     } else if (type == 'invalid') {
       newLog.innerHTML = `<p style='color: firebrick'>${amount}</p>`
     } else if (type == 'story') {
-      newLog.innerHTML = `<i style='color: slateblue;'>${amount}</i>`
+      newLog.innerHTML = `<p><i style='color: slateblue;'>${amount}</i></p>`
     } else if (type == 'craft') {
       let words = ['created', 'crafted', 'made']
       newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
@@ -1503,10 +1587,19 @@ Game.launch = () => {
     if (Game.recalculateRemainingTechDuration) Game.calculateRemainingTechDuration()
 
     for (i in Game.actions) {
-      if (Game.actions[i].cooldown) {
-        if (Game.actions[i].currentCooldown != null) {
-          Game.updateCooldown(i)
+      if (Game.actions[i].tab == 'GATHER') {
+        if (Game.actions[i].cooldown) {
+          if (Game.actions[i].currentCooldown != null) {
+            Game.updateCooldown(i)
+          }
         }
+      }
+    }
+
+    if (Game.state.buildQueue) {
+      // Game.updateBuildQueue()
+      if (Game.state.buildQueue.length > 0) {
+        Game.updateBuildQueue()
       }
     }
 
