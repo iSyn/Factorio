@@ -8,6 +8,17 @@ let select = ((arr, what) => {
 })
 let choose = ((arr) => {return Math.floor(Math.random() * arr.length)})
 
+// https://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
+function executeFunctionByName(functionName, context /*, args */) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    var namespaces = functionName.split(".");
+    var func = namespaces.pop();
+    for (var i = 0; i < namespaces.length; i++) {
+        context = context[namespaces[i]];
+    }
+    return context[func].apply(context, args);
+}
+
 let Game = {}
 
 Game.launch = () => {
@@ -99,13 +110,16 @@ Game.launch = () => {
       currentTech: null
     },
 
+    constructors: [],
+
     emptyConstructor: {
       materials: 1
     },
 
     constructorInfo: {
       owned: 0,
-      active: 0
+      active: 0,
+      inactive: 0
     },
 
     selectedTab: 'ACTION',
@@ -592,65 +606,245 @@ Game.launch = () => {
   Game.buildConstructors = () => {
     let str = `
       <br/>
-      <h3>CONSTRUCTORS</h3>
+      <h3>CONSTRUCTORS <span style='font-size: small'>owned: ${Game.state.constructorInfo.owned}</span></h3>
       <hr/>
       <div style='margin-top: 5px;' class="constructors-container">
     `
 
-      str += `
-        <div class="empty-constructor">
-          <h4 style='text-align: center'>SELECT MATERIALS</h4>
-          <hr style='margin-bottom: 5px;'/>
-      `
-          if (Game.state.emptyConstructor.materials.length == 0) {
-            str += `
-              <div class="row">
-                <select id='constructor-materials-0' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(0)'>
-                  <option selected disabled>Materials</option>
-                  <option value="wood">Wood</option>
-                  <option value="stone">Stone</option>
-                  <option value="coal">Coal</option>
-                  <option value="copper">Copper</option>
-                  <option value="iron">Iron</option>
-                  <option value="copperPlate">Copper Plate</option>
-                  <option value="ironPlate">Iron Plate</option>
-                  <option value="copperCoil">Copper Coil</option>
-                  <option value="ironPlate">Iron Plate</option>
-                </select>
-                <input id='constructor-materials-amount-0' onchange='Game.changeConstructorMaterialAmount(0)' style='width: 40px;' type="number" min='1' max='10'/>
-              </div>
-            `
-          } else {
-            for (i in Game.state.emptyConstructor.materials) {
-              str += `
-                <div class="row">
-                  <select id='constructor-materials-${i}' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(${i})'>
-                    <option selected disabled>Materials</option>
-                    <option value="wood">Wood</option>
-                    <option value="stone">Stone</option>
-                    <option value="coal">Coal</option>
-                    <option value="copper">Copper</option>
-                    <option value="iron">Iron</option>
-                    <option value="copperPlate">Copper Plate</option>
-                    <option value="ironPlate">Iron Plate</option>
-                    <option value="copperCoil">Copper Coil</option>
-                    <option value="ironPlate">Iron Plate</option>
-                  </select>
-                  <input id='constructor-materials-amount-${i}' onchange='Game.changeConstructorMaterialAmount(${i})' style='width: 40px;' type="number" min='1' max='10'/>
-                </div>
-              `
-            }
-          }
+    if (Game.state.constructors.length > 0) {
+      for (i in Game.state.constructors) {
+        let selected = Game.state.constructors[i]
 
+        str += `
+          <div class="constructor">
+            <p style='font-weight: bold; text-align: center'>${selected.name.toUpperCase()}</p>
+            <hr />
+        `
+
+        // ON AND OFF BUTTONS
+        if (selected.power == 0) {
+          str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleConstructorPower(1, ${i})' class="power-btn">OFF</button></p>`
+        } else {
+          str += `<p style='margin-bottom: 5px'>Power: <button onclick='Game.toggleConstructorPower(0, ${i})' class="power-btn">ON</button></p>`
+        }
+
+        // FUEL DROPDOWN
+        if (Game.state.constructors[i].fuel == null) {
           str += `
-          <p style='text-align: center;'><i onclick='Game.addConstructorMaterial()' style='cursor: pointer;' class='fa fa-plus-square-o fa-1x'></i></p>
-          <br/>
-          <button>SELECT</button>
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='constructor-fuel-${i}' onchange='Game.changeConstructorFuel("${i}")'>
+                <option selected disabled>Select Fuel Type</option>
+                <option value="Wood">Wood</option>
+                <option value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        } else if (Game.state.constructors[i].fuel == 'Wood') {
+          str += `
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='constructor-fuel-${i}' onchange='Game.changeConstructorFuel("${i}")'>
+                <option disabled>Select Fuel Type</option>
+                <option selected value="Wood">Wood</option>
+                <option value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        } else if (Game.state.constructors[i].fuel == 'Coal') {
+          str += `
+            <div class="fuel-container">
+              <p>Fuel: </p>
+              <select id='constructor-fuel-${i}' onchange='Game.changeConstructorFuel("${i}")'>
+                <option disabled>Select Fuel Type</option>
+                <option value="Wood">Wood</option>
+                <option selected value="Coal">Coal</option>
+              </select>
+            </div>
+          `
+        }
+
+        // BUILD ADD AND REMOVE
+        str += `
+          <p style='margin-bottom: 5px'>Constructors: <button onclick='Game.addRemoveConstructor(0, ${i})' class='drill-btn'>-</button>${Game.state.constructors[i].active}<button  onclick='Game.addRemoveConstructor(1, ${i})'class='drill-btn'>+</button></p>
+        `
+
+        str += '</div>'
+      }
+    }
+
+    if (Game.state.constructors.length < Game.state.constructorInfo.owned) {
+      str += `
+        <div class="available-constructor" onclick='Game.newConstructor()'>
+          <h4>DESIGNATE <br/> INACTIVE <br/> CONSTRUCTOR</h4>
         </div>
-      </div>
-    `
+      `
+    }
+
+    str += '</div>'
 
     return str
+  }
+
+  Game.toggleConstructorPower = (pow, num) => {
+    let selectedConstructor = Game.state.constructors[num]
+
+    if (selectedConstructor.fuel != null && selectedConstructor.active > 0) {
+      selectedConstructor.power = pow
+
+      Game.rebuildSelectedTab = 1
+    } else {
+      Game.addLog('invalid', 'Select a fuel type before powering on constructor')
+    }
+
+    if (selectedConstructor.active == 0) {
+      Game.addLog('invalid', 'Add some constructors')
+    }
+  }
+
+  Game.changeConstructorFuel = (num) => {
+    let selectedConstructor = Game.state.constructors[num]
+    let selectedSelect = s(`#constructor-fuel-${num}`)
+
+    selectedConstructor.fuel = selectedSelect.value
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.addRemoveConstructor = (type, num) => {
+    let selectedConstructor = Game.state.constructors[num]
+
+    if (type == 0) {
+      // REMOVE CONSTRUCTORS
+      if (selectedConstructor.active > 0) {
+        selectedConstructor.active--
+        Game.state.constructorInfo.inactive++
+        Game.state.constructorInfo.active--
+        if (selectedConstructor.active == 0) {
+          selectedConstructor.power = 0
+        }
+      }
+    } else {
+      // ADD CONSTRUCTORS
+      if (Game.state.constructorInfo.inactive > 0) {
+        selectedConstructor.active++
+        Game.state.constructorInfo.inactive--
+        Game.state.constructorInfo.active++
+      }
+    }
+
+    Game.rebuildSelectedTab = 1
+  }
+
+  Game.newConstructor = () => {
+    if (Game.state.constructorInfo.inactive > 0) {
+      let div = document.createElement('div')
+
+      div.classList.add('wrapper')
+
+      let str = `
+        <div class="constructor-modal-container">
+          <div style='display: flex; flex-flow: row nowrap; align-items: center'>
+            <h2 style='flex-grow: 1; text-align: center'>CONSTRUCTOR</h2>
+            <p><i onclick='Game.removeWrapper(); Game.state.emptyConstructor.materials=1' style='cursor: pointer;' class='fa fa-times fa-1x'></i></p>
+          </div>
+          <hr/>
+          <br/>
+          `
+
+          str += '<div class="constructor-materials-container">'
+
+          str += `
+            <div class="row">
+              <select id='constructor-materials-1' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(1)'>
+                <option selected disabled>Select a material</option>
+                <option value="wood">Wood</option>
+                <option value="stone">Stone</option>
+                <option value="coal">Coal</option>
+                <option value="copper">Copper</option>
+                <option value="iron">Iron</option>
+                <option value="copperPlate">Copper Plate</option>
+                <option value="ironPlate">Iron Plate</option>
+                <option value="copperCoil">Copper Coil</option>
+                <option value="ironGear">Iron Gear</option>
+              </select>
+              <input id='constructor-materials-amount-1' onchange='Game.changeConstructorMaterialAmount(0)' style='width: 40px;' type="number" min='1' max='10'/>
+            </div>
+          `
+
+          str += '</div>'
+
+          str += `<p style='text-align: center;'><i onclick='Game.addConstructorMaterial()' style='cursor: pointer; margin-top: 3px;' class='fa fa-plus-square-o fa-2x'></i></p>`
+
+          str += `<button onclick='Game.checkConstructorRecipe()'>DESIGNATE</button>`
+
+          str += `</div>`
+
+          div.innerHTML = str
+
+      s('body').append(div)
+    }
+  }
+
+  Game.checkConstructorRecipe = () => {
+    let material1, amount1, material2, amount2, set1, set2
+    let recipeLength = 1
+
+    if (s('#constructor-materials-1')) material1 = s('#constructor-materials-1').value
+    if (s('#constructor-materials-amount-1')) amount1 = s('#constructor-materials-amount-1').value
+    if (s('#constructor-materials-2')) material2 = s('#constructor-materials-2').value
+    if (s('#constructor-materials-amount-2')) amount2 = s('#constructor-materials-amount-2').value
+
+    set1 = `${material1} ${amount1}`
+
+    if (material2) {
+      set2 = `${material2} ${amount2}`
+      recipeLength++
+    }
+
+
+    Game.removeWrapper()
+    Game.state.emptyConstructor.materials = 1
+
+    let recipeFound = false
+
+    if (recipeLength == 1) {
+      for (i=0; i<recipes.length; i++) {
+        if (set1 == recipes[i].recipe[0]) {
+          Game.foundRecipe(`${recipes[i].name}`)
+          recipeFound = true
+        }
+      }
+    } else if (recipeLength == 2) {
+      for (i=0; i<recipes.length; i++) {
+        if (set1 == recipes[i].recipe[0] && set2 == recipes[i].recipe[1]) {
+          Game.foundRecipe(`${recipes[i].name}`)
+          recipeFound = true
+        }
+      }
+    }
+
+    if (recipeFound == false) Game.addLog('invalid', 'Invalid recipe')
+  }
+
+  Game.foundRecipe = (item) => {
+    let selectedItem = select(recipes, item)
+
+    let constructorObj = {
+      name: selectedItem.name,
+      item: selectedItem.itemName,
+      power: 0,
+      active: 0,
+      fuel: null
+    }
+
+    Game.state.constructorInfo.inactive--
+    Game.state.constructorInfo.active++
+
+
+    Game.state.constructors.push(constructorObj)
+
+    Game.rebuildSelectedTab = 1
   }
 
   Game.changeConstructorMaterial = (num) => {
@@ -1081,7 +1275,10 @@ Game.launch = () => {
     s('#world-resources-page-content').classList.add('fadeIn-slow')
 
     let action = select(Game.actions, 'EXPLORE')
-    action.locked = 0;
+    action.locked = 0
+
+    let mineCoal = select(Game.actions, 'MINE COAL')
+    mineCoal.locked = 0
 
     Game.rebuildInventory = 1
     Game.rebuildWorldResources = 1
@@ -1121,7 +1318,7 @@ Game.launch = () => {
     }
   }
 
-  Game.addBuildQueue = (actionNum) => {
+  Game.addBuildQueue = (actionNum, func) => {
 
     let action = Game.actions[actionNum]
 
@@ -1129,7 +1326,8 @@ Game.launch = () => {
       name: action.name,
       itemName: action.itemName,
       cooldown: action.cooldown,
-      onComplete: action.onclick
+      onComplete: action.onclick,
+      price: action.price
     }
 
     let success = true
@@ -1160,10 +1358,32 @@ Game.launch = () => {
       }
 
       Game.rebuildInventory = 1
+    } else {
+      Game.addLog('invalid', 'You are missing some resources')
     }
   }
 
+  Game.cancelBuildQueue = (num) => {
+
+    let selected = Game.state.buildQueue[num]
+
+    for (i in selected.price) {
+      let material = selected.price[i].type
+      let amount = selected.price[i].amount
+
+      Game.state[material] += amount
+      Game.rebuildInventory = 1
+    }
+
+    Game.state.buildQueue.splice(num, 1)
+
+    Game.hideTooltip()
+    Game.updateBuildQueue()
+  }
+
   Game.updateBuildQueue = () => {
+
+    console.log('updating')
 
     let buildQueue = s('.build-queue-container')
     let str = ''
@@ -1178,7 +1398,7 @@ Game.launch = () => {
         str += `
           <div>
             <h4>BUILDING: ${Game.state.buildQueue[i].itemName}</h4>
-            <div style='display: flex; flex-flow: row nowrap;'>
+            <div onclick='Game.cancelBuildQueue(${i})' style='display: flex; flex-flow: row nowrap;'>
               <h4>PROGRESS: </h4>
               <div class="building-progress-container" style='flex-grow: 1'>
                 <div class="building-progress" style='width: 25%; height: 100%; background: black'></div>
@@ -1188,21 +1408,25 @@ Game.launch = () => {
           </div>
         `
       } else {
-        str += `<p>${Game.state.buildQueue[i].itemName}</p>`
+        str += `<p style='cursor: pointer;' onmouseover='Game.showTooltip("<p>click to cancel</p>")' onmouseout='Game.hideTooltip()' onclick='Game.cancelBuildQueue(${i})'>${Game.state.buildQueue[i].itemName}</p>`
       }
     }
 
     buildQueue.innerHTML = str
 
-    if (Game.state.buildQueue[0].currentCooldown >= 0) {
-      Game.state.buildQueue[0].currentCooldown -= 30
+    if (Game.state.buildQueue[0].currentCooldown > 0) {
+      Game.state.buildQueue[0].currentCooldown -= 31
       let barWidth = 100 - (Game.state.buildQueue[0].currentCooldown/Game.state.buildQueue[0].cooldown * 100)
       let progressBar = s('.building-progress')
       progressBar.style.width = barWidth + '%'
     } else {
+      console.log('completed')
+      let functionName = Game.state.buildQueue[0].onComplete
+      Game[functionName]();
+
       Game.state.buildQueue.shift()
       if (Game.state.buildQueue.length == 0) {
-        buildQueue.innerHTML = `<p style='text-align: center; opacity: 0.6;'>No buildings in queue</p>`
+        buildQueue.innerHTML = `<p style='text-align: center; opacity: 0.6;'>No items in queue</p>`
       }
     }
   }
@@ -1334,175 +1558,75 @@ Game.launch = () => {
   }
 
   Game.buildMiningDrill = () => {
-    // let action = select(Game.actions, 'BUILD MINING DRILL')
-
-    if (Game.state.wood < 20) Game.addLog('invalid', "You don't have enough wood")
-    if (Game.state.stone < 20) Game.addLog('invalid', "You don't have enough stone")
-
-    if (Game.state.wood >= 20 && Game.state.stone >= 20) {
-      Game.spend('wood', 20)
-      Game.spend('stone', 20)
-      Game.state.miningDrillsInfo.owned++
-      Game.state.miningDrillsInfo.inactive++
-      Game.state.stats.totalBuildsManuallyFired++
-      Game.rebuildSelectedTab = 1
-      Game.addLog('craft', 'mining drill')
-    }
+    Game.state.miningDrillsInfo.owned++
+    Game.state.miningDrillsInfo.inactive++
+    Game.state.stats.totalBuildsManuallyFired++
+    Game.rebuildSelectedTab = 1
+    Game.addLog('craft', 'mining drill')
   }
 
   Game.buildFurnace = () => {
-    if (Game.state.stone < 100) Game.addLog('invalid', 'You dont have enough stone')
-    if (Game.state.coal < 25) Game.addLog('invalid', 'You dont have enough coal')
+    Game.state.furnacesInfo.owned++
+    Game.state.furnacesInfo.inactive++
+    Game.state.stats.totalBuildsManuallyFired++
+    Game.addLog('craft', 'furnace')
 
-    if (Game.state.stone >= 100 && Game.state.coal >= 25) {
-      Game.spend('stone', 100)
-      Game.spend('coal', 25)
-      Game.state.furnacesInfo.owned++
-      Game.state.furnacesInfo.inactive++
-      Game.state.stats.totalBuildsManuallyFired++
-      Game.addLog('craft', 'furnace')
-
-      // UNLOCK NEW BUTTONS
-      if (select(Game.actions, "BURN WOOD").locked == 1) {
-        select(Game.actions, "BURN WOOD").locked = 0
-        select(Game.actions, "SMELT COPPER").locked = 0
-        select(Game.actions, "SMELT IRON").locked = 0
-      }
-
-      Game.rebuildSelectedTab = 1
-
+    // UNLOCK NEW BUTTONS
+    if (select(Game.actions, "BURN WOOD").locked == 1) {
+      select(Game.actions, "BURN WOOD").locked = 0
+      select(Game.actions, "SMELT COPPER").locked = 0
+      select(Game.actions, "SMELT IRON").locked = 0
     }
+
+    Game.rebuildSelectedTab = 1
   }
 
   Game.buildRedScience = () => {
-    if (Game.state.copperPlate >= 1 && Game.state.ironPlate >= 1) {
-      Game.state.copperPlate--
-      Game.state.ironPlate--
-      Game.state.redScience++
-      Game.state.stats.totalBuildsManuallyFired++
+    Game.state.redScience++
+    Game.state.stats.totalBuildsManuallyFired++
 
-      Game.addLog('success', 'You crafted a red science')
+    Game.addLog('success', 'You crafted a red science')
 
-      Game.rebuildInventory = 1
-    } else {
-      if (Game.state.copperPlate < 1) Game.addLog('invalid', 'You do not have enough copper plates')
-      if (Game.state.ironPlate < 1) Game.addLog('invalid', 'You do not have enough iron plates')
-    }
+    Game.rebuildInventory = 1
   }
 
   Game.buildLab = () => {
-    if (Game.state.stone < 50) Game.addLog('invalid', 'You dont have enough stone')
-    if (Game.state.iron < 10) Game.addLog('invalid', 'You dont have enough iron')
+    Game.state.labs.owned++
+    Game.state.stats.totalBuildsManuallyFired++
 
-    if (Game.state.stone >= 50 && Game.state.iron >= 10) {
-      Game.spend('stone', 50)
-      Game.spend('iron', 10)
-      Game.state.labs.owned++
-      Game.state.stats.totalBuildsManuallyFired++
+    let redScience = select(Game.actions, "BUILD RED SCIENCE")
+    if (redScience.locked == 1) redScience.locked = 0
 
-      let redScience = select(Game.actions, "BUILD RED SCIENCE")
-      if (redScience.locked == 1) redScience.locked = 0
+    Game.rebuildSelectedTab = 1
+    Game.addLog('craft', 'lab')
 
-
-      Game.rebuildSelectedTab = 1
-      Game.addLog('craft', 'lab')
-
-      if (Game.state.tabs[2].locked == true) {
-        Game.state.tabs[2].locked = false
-        Game.rebuildTabs = 1
-      }
-
+    if (Game.state.tabs[2].locked == true) {
+      Game.state.tabs[2].locked = false
+      Game.rebuildTabs = 1
     }
   }
 
   Game.buildIronGear = () => {
-    if (Game.state.ironPlate >= 2) {
-      Game.state.ironPlate -= 2
-      Game.state.ironGear += 1
+    Game.state.ironGear += 1
 
-      Game.addLog('success', 'You made an iron gear')
+    Game.addLog('success', 'You made an iron gear')
 
-      Game.rebuildInventory = 1
-    } else {
-      Game.addLog('invalid', 'You do not have enough iron plates')
-    }
+    Game.rebuildInventory = 1
   }
 
   Game.buildCopperCoil = () => {
-    if (Game.state.copperPlate >= 2) {
-      Game.state.copperPlate -= 2
-      Game.state.copperCoil += 1
+    Game.state.copperCoil += 1
 
-      Game.addLog('success', 'You crafted a copper coil')
+    Game.addLog('success', 'You crafted a copper coil')
 
-      Game.rebuildInventory = 1
-    } else {
-      Game.addLog('invalid', 'You do not have enough copper plates')
-    }
+    Game.rebuildInventory = 1
   }
 
   Game.buildConstructor = () => {
-    let div = document.createElement('div')
+    Game.state.constructorInfo.owned++
+    Game.state.constructorInfo.inactive++
 
-    div.classList.add('wrapper')
-
-    let str = `
-      <div class="constructor-modal-container">
-        <div style='display: flex; flex-flow: row nowrap; align-items: center'>
-          <h2 style='flex-grow: 1; text-align: center'>CONSTRUCTOR</h2>
-          <p><i onclick='Game.removeWrapper(); Game.state.emptyConstructor.materials=1' style='cursor: pointer;' class='fa fa-times fa-1x'></i></p>
-        </div>
-        <hr/>
-        <br/>
-        `
-
-        str += '<div class="constructor-materials-container">'
-
-        str += `
-          <div class="row">
-            <select id='constructor-materials-1' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(1)'>
-              <option selected disabled>Select a material</option>
-              <option value="wood">Wood</option>
-              <option value="stone">Stone</option>
-              <option value="coal">Coal</option>
-              <option value="copper">Copper</option>
-              <option value="iron">Iron</option>
-              <option value="copperPlate">Copper Plate</option>
-              <option value="ironPlate">Iron Plate</option>
-              <option value="copperCoil">Copper Coil</option>
-              <option value="ironPlate">Iron Plate</option>
-            </select>
-            <input id='constructor-materials-amount-1' onchange='Game.changeConstructorMaterialAmount(0)' style='width: 40px;' type="number" min='1' max='10'/>
-          </div>
-        `
-
-        str += '</div>'
-
-        str += `<p style='text-align: center;'><i onclick='Game.addConstructorMaterial()' style='cursor: pointer; margin-top: 3px;' class='fa fa-plus-square-o fa-2x'></i></p>`
-
-        str += `<button>BUILD</button>`
-
-        str += `</div>`
-
-        div.innerHTML = str
-
-    s('body').append(div)
-
-    // if (Game.state.ironPlate >= 5 && Game.state.ironGear >= 2 && Game.state.copperCoil >= 3) {
-    //   Game.state.ironPlate -= 5
-    //   Game.state.ironGear -= 2
-    //   Game.state.copperCoil -= 3
-
-    //   Game.addLog("success", 'You made a constructor')
-
-    //   Game.rebuildInventory = 1
-
-    //   Game.state.constructorInfo.owned++
-    // } else {
-    //   if (Game.state.ironPlate < 5) Game.addLog('invalid', 'You do not have enough iron plates')
-    //   if (Game.state.ironGear < 2) Game.addLog('invalid', 'You do not have enough iron gears')
-    //   if (Game.state.copperCoil < 3) Game.addLog('invalid', 'You do not have enough copper coils')
-    // }
+    Game.addLog('success', 'You made a constructor')
   }
 
   Game.addConstructorMaterial = () => {
@@ -1570,7 +1694,7 @@ Game.launch = () => {
   Game.removeWrapper = () => {
     let wrappers = document.querySelectorAll('.wrapper');
     wrappers.forEach((wrapper) => {
-      wrapper.remove()
+      wrapper.parentNode.removeChild(wrapper)
     })
   }
 
@@ -1609,21 +1733,49 @@ Game.launch = () => {
   Game.load()
   Game.logic()
 
+  // s('header').onclick = () => {
+  //   console.log('clicked')
+  //   Game.state.wood += 200
+  //   Game.state.stone += 200
+  //   Game.state.iron += 200
+  //   Game.state.coal += 200
+  //   Game.state.copper += 200
+  //   Game.state.ironPlate += 200
+  //   Game.state.copperPlate += 200
+  //   Game.state.redScience += 200
+  //   Game.state.ironGear += 200
+  //   Game.state.copperCoil += 200
+  //   Game.buildInventory()
+  //   for (i=0; i<Game.technologies.length; i++) {
+  //     Game.technologies[i].duration = 1
+  //   }
+  //   for (i=0; i<Game.actions.length; i++) {
+  //     Game.actions[i].cooldown = .5
+  //   }
+  // }
+
+  let clickCounter = 0;
   s('header').onclick = () => {
-    console.log('clicked')
-    Game.state.wood += 200
-    Game.state.stone += 200
-    Game.state.iron += 200
-    Game.state.coal += 200
-    Game.state.copper += 200
-    Game.state.ironPlate += 200
-    Game.state.copperPlate += 200
-    Game.state.redScience += 200
-    Game.state.ironGear += 200
-    Game.state.copperCoil += 200
-    Game.buildInventory()
-    for (i=0; i<Game.technologies.length; i++) {
-      Game.technologies[i].duration = 1
+    clickCounter++
+    if (clickCounter > 20) {
+      Game.addLog('success', '<h1>CHEATS ENABLED</h1>')
+      Game.state.wood += 200
+      Game.state.stone += 200
+      Game.state.iron += 200
+      Game.state.coal += 200
+      Game.state.copper += 200
+      Game.state.ironPlate += 200
+      Game.state.copperPlate += 200
+      Game.state.redScience += 200
+      Game.state.ironGear += 200
+      Game.state.copperCoil += 200
+      Game.buildInventory()
+      for (i=0; i<Game.technologies.length; i++) {
+        Game.technologies[i].duration = 1
+      }
+      for (i=0; i<Game.actions.length; i++) {
+        Game.actions[i].cooldown = .5
+      }
     }
   }
 

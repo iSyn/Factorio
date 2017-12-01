@@ -79,16 +79,16 @@ let actions = [
     price: [
       {
         type: 'wood',
-        amount: 20
+        amount: 30
       }, {
         type: 'stone',
-        amount: 20
+        amount: 30
       }
     ],
-    tooltip: '<p><strong>Cost: 20 wood, 20 stone</strong></p><p><i>Allows for automation</i></p>',
-    onclick: 'Game.buildMiningDrill',
+    tooltip: '<p><strong>Cost: 30 wood, 30 stone</strong></p><p><i>Allows for automation</i></p>',
+    onclick: 'buildMiningDrill',
     locked: 0,
-    cooldown: 5
+    cooldown: 6
   }, {
     name: 'FURNACE',
     tab: 'BUILD',
@@ -102,8 +102,9 @@ let actions = [
       }
     ],
     tooltip: '<p><strong>Cost: 100 stone, 25 coal</strong></p><p><i>Smelts raw materials</i></p>',
-    onclick: 'Game.buildFurnace',
-    locked: 0
+    onclick: 'buildFurnace',
+    locked: 0,
+    cooldown: 6
   }, {
     name: 'LAB',
     tab: 'BUILD',
@@ -117,39 +118,83 @@ let actions = [
       }
     ],
     tooltip: '<p><strong>Cost: 50 stone, 10 iron</strong></p><p><i>Enables technology</i></p>',
-    onclick: 'Game.buildLab',
+    onclick: 'buildLab',
     locked: 0,
+    cooldown: 6
   }, {
     name: 'CONSTRUCTOR',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'ironPlate',
+        amount: 5,
+      }, {
+        type: 'ironGear',
+        amount: 2,
+      }, {
+        type: 'copperCoil',
+        amount: 3
+      }
+    ],
     tooltip: '<p><strong>Cost: 5 iron plates, 2 iron gears, 3 copper coils</strong></p><p><i>Automate the constructing of an item</i></p>',
-    onclick: 'Game.buildConstructor',
-    locked: 1
+    onclick: 'buildConstructor',
+    locked: 1,
+    cooldown: 6
   }, {
     name: 'RED SCIENCE',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'copperPlate',
+        amount: 1
+      }, {
+        type: 'ironPlate',
+        amount: 1
+      }
+    ],
     tooltip: '<p><strong>Cost: 1 copper plate, 1 iron plate</strong></p><p><i>Used for basic science</i></p>',
-    onclick: 'Game.buildRedScience',
+    onclick: 'buildRedScience',
     locked: 1,
     nextLine: true
   }, {
     name: 'BLUE SCIENCE',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'copperCoil',
+        amount: 3
+      }, {
+        type: 'ironScrews',
+        amount: 3
+      }
+    ],
     tooltip: '<p><strong>Cost: 3 copper coils, 3 iron screws</strong></p><p><i>Used for intermediate science</i></p>',
-    onclick: 'Game.buildBlueScience',
+    onclick: 'buildBlueScience',
     locked: 1,
   }, {
     name: 'IRON GEAR',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'ironPlate',
+        amount: 2
+      }
+    ],
     tooltip: '<p><strong>Cost: 2 iron plates</strong></p><p><i>Used for crafting</i></p>',
-    onclick: 'Game.buildIronGear',
+    onclick: 'buildIronGear',
     locked: 1,
     nextLine: true
   }, {
     name: 'COPPER COIL',
     tab: 'BUILD',
+    price: [
+      {
+        type: 'copperPlate',
+        amount: 2
+      }
+    ],
     tooltip: '<p><strong>Cost: 2 copper plates</strong></p><p><i>Used for crafting</i></p>',
-    onclick: 'Game.buildCopperCoil',
+    onclick: 'buildCopperCoil',
     locked: 1,
   }
 ]

@@ -344,8 +344,8 @@ button:active {
   margin-right: 5px;
 }
 
-.empty-constructor {
-  border: 2px dashed black;
+.available-constructor {
+  border: 3px dashed black;
   width: 200px;
   max-width: 200px;
   min-width: 200px;
@@ -353,6 +353,22 @@ button:active {
   padding: 5px;
   margin-right: 5px;
   background: white;
+  position: relative;
+  background: white;
+  cursor: pointer;
+}
+
+.available-constructor:hover {
+  filter: brightness(80%);
+}
+
+.available-constructor h4 {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
 }
 
 .row {
@@ -377,7 +393,7 @@ button:active {
   height: 300px;
   width: 300px;
   background-color: white;
-  border: 5px solid black;
+  border: 4px solid black;
   padding: 5px;
 }
 
@@ -412,6 +428,9 @@ button:active {
   overflow: auto;
 }
 
+.build-queue-container p:hover {
+  font-weight: bold;
+}
 
 
 
