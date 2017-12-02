@@ -119,7 +119,7 @@ Game.launch = () => {
     constructorInfo: {
       owned: 0,
       active: 0,
-      inactive: 0
+      inactive: 0,
     },
 
     selectedTab: 'ACTION',
@@ -276,6 +276,16 @@ Game.launch = () => {
           }
         }
         Game.rebuildInventory = 1
+      }
+    }
+
+    // CONSTRUCTORS
+    for (i in Game.state.constructors) {
+      let selectedConstructor = Game.state.constructors[i]
+      console.log(selectedConstructor)
+      if (selectedConstructor.power == 1) {
+        let resourceGain = selectedConstructor.active
+        // let resourceLoss =
       }
     }
   }
@@ -606,7 +616,7 @@ Game.launch = () => {
   Game.buildConstructors = () => {
     let str = `
       <br/>
-      <h3>CONSTRUCTORS <span style='font-size: small'>owned: ${Game.state.constructorInfo.owned}</span></h3>
+      <h3>CONSTRUCTORS <span style='font-size: small'>owned: ${Game.state.constructorInfo.owned} | active: ${Game.state.constructorInfo.active} | inactive: ${Game.state.constructorInfo.inactive}</span></h3>
       <hr/>
       <div style='margin-top: 5px;' class="constructors-container">
     `
@@ -787,60 +797,59 @@ Game.launch = () => {
   }
 
   Game.checkConstructorRecipe = () => {
-    let material1, amount1, material2, amount2, set1, set2
-    let recipeLength = 1
+    let userInput = []
 
-    if (s('#constructor-materials-1')) material1 = s('#constructor-materials-1').value
-    if (s('#constructor-materials-amount-1')) amount1 = s('#constructor-materials-amount-1').value
-    if (s('#constructor-materials-2')) material2 = s('#constructor-materials-2').value
-    if (s('#constructor-materials-amount-2')) amount2 = s('#constructor-materials-amount-2').value
+    let check = document.querySelectorAll('.row')
 
-    set1 = `${material1} ${amount1}`
-
-    if (material2) {
-      set2 = `${material2} ${amount2}`
-      recipeLength++
-    }
-
-
-    Game.removeWrapper()
-    Game.state.emptyConstructor.materials = 1
-
-    let recipeFound = false
-
-    if (recipeLength == 1) {
-      for (i=0; i<recipes.length; i++) {
-        if (set1 == recipes[i].recipe[0]) {
-          Game.foundRecipe(`${recipes[i].name}`)
-          recipeFound = true
-        }
-      }
-    } else if (recipeLength == 2) {
-      for (i=0; i<recipes.length; i++) {
-        if (set1 == recipes[i].recipe[0] && set2 == recipes[i].recipe[1]) {
-          Game.foundRecipe(`${recipes[i].name}`)
-          recipeFound = true
-        }
+    for (i = 0; i < check.length; i++) {
+      // IF HAS A MATERIAL AND THERES AN AMOUNT
+      if (check[i].children[0].value != 'Select a material' && check[i].children[1].value) {
+        userInput.push({
+          material: check[i].children[0].value,
+          amount: check[i].children[1].value,
+        })
       }
     }
 
-    if (recipeFound == false) Game.addLog('invalid', 'Invalid recipe')
+    let success = false
+    let selectedRecipe = {}
+
+    // LOOP THORUGH RECIPES
+    for (i in recipes) {
+      // IF SELECTED RECIPE HAS THE SAME AMOUNT OF MATERIALS
+      if (userInput.length == recipes[i].requirements.length) {
+        for (j = 0; j < userInput.length; j++) {
+          if (userInput[j].material == recipes[i].requirements[j].material && userInput[j].amount == recipes[i].requirements[j].amount) {
+            success = true
+            selectedRecipe = recipes[i]
+          } else {
+            success = false
+            break
+          }
+        }
+        if (success) {
+          break
+        }
+      }
+    }
+
+    if (success) {
+      Game.foundRecipe(selectedRecipe)
+    } else {
+      console.log('invalid recipe')
+    }
   }
 
-  Game.foundRecipe = (item) => {
-    let selectedItem = select(recipes, item)
+  Game.foundRecipe = (recipe) => {
 
     let constructorObj = {
-      name: selectedItem.name,
-      item: selectedItem.itemName,
+      name: recipe.name,
+      itemToConstruct: recipe.itemName,
+      requirements: recipe.requirements,
       power: 0,
       active: 0,
       fuel: null
     }
-
-    Game.state.constructorInfo.inactive--
-    Game.state.constructorInfo.active++
-
 
     Game.state.constructors.push(constructorObj)
 
@@ -1733,31 +1742,10 @@ Game.launch = () => {
   Game.load()
   Game.logic()
 
-  // s('header').onclick = () => {
-  //   console.log('clicked')
-  //   Game.state.wood += 200
-  //   Game.state.stone += 200
-  //   Game.state.iron += 200
-  //   Game.state.coal += 200
-  //   Game.state.copper += 200
-  //   Game.state.ironPlate += 200
-  //   Game.state.copperPlate += 200
-  //   Game.state.redScience += 200
-  //   Game.state.ironGear += 200
-  //   Game.state.copperCoil += 200
-  //   Game.buildInventory()
-  //   for (i=0; i<Game.technologies.length; i++) {
-  //     Game.technologies[i].duration = 1
-  //   }
-  //   for (i=0; i<Game.actions.length; i++) {
-  //     Game.actions[i].cooldown = .5
-  //   }
-  // }
-
   let clickCounter = 0;
   s('header').onclick = () => {
     clickCounter++
-    if (clickCounter > 20) {
+    if (clickCounter > 7) {
       Game.addLog('success', '<h1>CHEATS ENABLED</h1>')
       Game.state.wood += 200
       Game.state.stone += 200
