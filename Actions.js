@@ -23,6 +23,7 @@ let actions = [
     tooltip: '<p>Look around your surroundings</p>',
     onclick: 'Game.explore',
     locked: 1,
+    cooldown: 5
   }, {
     name: 'CHOP TREE',
     tab: 'GATHER',

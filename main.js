@@ -1462,12 +1462,11 @@ Game.launch = () => {
   }
 
   Game.explore = () => {
-    // // Game.addLog(null, 'You explore your surroundings but found nothing notable.')
-    // let amounts = [1, 5, 10]
-    // let amount = Math.floor(Math.random() * 20) + 1
 
     let selectedType = Game.state.worldResources[choose(Game.state.worldResources)]
-    let selectedAmount = Math.floor(Math.random() * 20) + 1
+
+    // Math.floor(Math.random() * (max - min + 1)) + min
+    let selectedAmount = Math.floor(Math.random() * (500 - 10 + 1)) + 10
 
     if (Math.random() >= .3) { // 70% chance
       selectedType.amount += selectedAmount
@@ -1480,7 +1479,22 @@ Game.launch = () => {
       // patch of ...
       // vein of ...
 
-      Game.addLog(null, `You find ${selectedAmount} ${selectedType.name.toLowerCase()}.`)
+      let small = ['a small patch of', 'a small vein of']
+      let medium = ['a medium patch of', 'a medium vein of']
+      let large = ['a large patch of', 'a large vein of']
+      let gigantic = ['a gigantic patch of']
+
+      let selectedArr = small
+      if (selectedAmount >= 100) selectedArr = medium
+      if (selectedAmount >= 200) selectedArr = large
+      if (selectedAmount >= 400) selectedArr = gigantic
+
+      if (selectedType.name == 'WOOD') {
+        Game.addLog(null, `You find ${selectedAmount} wood`)
+      } else {
+        Game.addLog(null, `You find ${selectedArr[choose(selectedArr)]} ${selectedAmount} ${selectedType.name.toLowerCase()}`)
+      }
+
       Game.rebuildWorldResources = 1
       Game.rebuildSelectedTab = 1
     } else {
