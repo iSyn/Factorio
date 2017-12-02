@@ -5,6 +5,7 @@ let recipes = [
     requirements: [
       {
         material: 'ironPlate',
+        materialName: 'iron plate',
         amount: 2
       }
     ]
@@ -15,6 +16,7 @@ let recipes = [
     requirements: [
       {
         material: 'copperPlate',
+        materialName: 'copper plate',
         amount: 2
       }
     ]
@@ -25,9 +27,11 @@ let recipes = [
     requirements: [
       {
         material: 'copperPlate',
+        materialName: 'copper plate',
         amount: 1
       }, {
         material: 'ironPlate',
+        materialName: 'iron plate',
         amount: 1
       }
     ]
