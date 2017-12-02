@@ -27,14 +27,14 @@ let actions = [
   }, {
     name: 'CHOP TREE',
     tab: 'GATHER',
-    tooltip: '<p>Gain 5-7 wood</p>',
+    tooltip: '<p>Gain some wood</p>',
     onclick: 'Game.chopTree',
     locked: 0,
     nextLine: true,
   }, {
     name: 'MINE ROCK',
     tab: 'GATHER',
-    tooltip: '<p>Gain 3-5 stone</p>',
+    tooltip: '<p>Gain some stone</p>',
     onclick: 'Game.mineRock',
     locked: 0,
   }, {
@@ -65,13 +65,13 @@ let actions = [
   }, {
     name: 'SMELT COPPER',
     tab: 'GATHER',
-    tooltip: '<p>Gain 1 copper plate for 1 copper</p>',
+    tooltip: '<p>Gain 1 copper plate for 2 copper</p>',
     onclick: 'Game.smeltCopper',
     locked: 1
   }, {
     name: 'SMELT IRON',
     tab: 'GATHER',
-    tooltip: '<p>Gain 1 iron plate for 1 iron</p>',
+    tooltip: '<p>Gain 1 iron plate for 2 iron</p>',
     onclick: 'Game.smeltIron',
     locked: 1
   }, {
@@ -80,13 +80,13 @@ let actions = [
     price: [
       {
         type: 'wood',
-        amount: 30
+        amount: 5
       }, {
         type: 'stone',
-        amount: 30
+        amount: 25
       }
     ],
-    tooltip: '<p><strong>Cost: 30 wood, 30 stone</strong></p><p><i>Allows for automation</i></p>',
+    tooltip: '<p><strong>Cost: 5 wood, 25 stone</strong></p><p><i>Allows for automation</i></p>',
     onclick: 'buildMiningDrill',
     locked: 0,
     cooldown: 6
@@ -100,9 +100,12 @@ let actions = [
       }, {
         type: 'coal',
         amount: 25
+      }, {
+        type: 'iron',
+        amount: 5
       }
     ],
-    tooltip: '<p><strong>Cost: 100 stone, 25 coal</strong></p><p><i>Smelts raw materials</i></p>',
+    tooltip: '<p><strong>Cost: 100 stone, 25 coal, 5 iron</strong></p><p><i>Smelts raw materials</i></p>',
     onclick: 'buildFurnace',
     locked: 0,
     cooldown: 6
@@ -114,11 +117,14 @@ let actions = [
         type: 'stone',
         amount: 50
       }, {
-        type: 'iron',
-        amount: 10
+        type: 'ironPlate',
+        amount: 5
+      }, {
+        type: 'copperPlate',
+        amount: 3
       }
     ],
-    tooltip: '<p><strong>Cost: 50 stone, 10 iron</strong></p><p><i>Enables technology</i></p>',
+    tooltip: '<p><strong>Cost: 50 stone, 5 iron plate, 3 copper plate</strong></p><p><i>Enables technology</i></p>',
     onclick: 'buildLab',
     locked: 0,
     cooldown: 6
@@ -165,11 +171,11 @@ let actions = [
         type: 'copperCoil',
         amount: 3
       }, {
-        type: 'ironScrews',
+        type: 'ironGear',
         amount: 3
       }
     ],
-    tooltip: '<p><strong>Cost: 3 copper coils, 3 iron screws</strong></p><p><i>Used for intermediate science</i></p>',
+    tooltip: '<p><strong>Cost: 3 copper coils, 3 iron gears</strong></p><p><i>Used for intermediate science</i></p>',
     onclick: 'buildBlueScience',
     locked: 1,
   }, {

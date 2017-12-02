@@ -38,7 +38,6 @@ window.onload = () => {
     let selectedAction = Game.actions[actionNum]
 
     if (!selectedAction.currentCooldown) {
-      console.log('action firing', selectedAction)
       selectedAction.currentCooldown = selectedAction.cooldown
     }
   }
@@ -46,8 +45,6 @@ window.onload = () => {
   Game.updateCooldown = (actionNum) => {
 
     let selectedAction = Game.actions[actionNum]
-
-    console.log('UPDATING', selectedAction.name)
 
     if (selectedAction.currentCooldown > 0) {
       selectedAction.currentCooldown -= 30
