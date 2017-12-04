@@ -570,7 +570,6 @@ Game.launch = () => {
       if (Game.state.selectedTab == 'ACTION') {
         let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
         train.style.left = position + "%"
-        Game.rebuildSelectedTab = 1
         if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 >= 100) {
           Game.state.trains.state = 3
           Game.state.trains.currentTime = 5 * 1000
@@ -582,7 +581,6 @@ Game.launch = () => {
       if (Game.state.selectedTab == 'ACTION') {
         let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
         train.style.left = position + "%"
-        Game.rebuildSelectedTab = 1
         if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 <= 0) {
           Game.state.trains.state = 3
           Game.state.trains.currentTime = 5 * 1000
