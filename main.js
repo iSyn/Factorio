@@ -637,10 +637,10 @@ Game.launch = () => {
       `
 
       // POWER
-      if (Game.state.trains.power = 0) {
-        str += `<p>Power: <button class='power-btn' onclick='Game.toggleTrainPower(0)'>ON</button></p>`
-      } else {
+      if (Game.state.trains.power == 0) {
         str += `<p>Power: <button class='power-btn' onclick='Game.toggleTrainPower(1)'>OFF</button></p>`
+      } else {
+        str += `<p>Power: <button class='power-btn' onclick='Game.toggleTrainPower(0)'>ON</button></p>`
       }
 
       // FUEL
