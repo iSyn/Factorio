@@ -35,8 +35,8 @@ let technologies = [
     tooltip: `<h4>METALSMITHING I</h4><hr/><p><strong>Cost: 3 red science</strong></p><p><i>Enables the building of basic metal items</i></p><hr /><p>3 seconds</p>`,
     duration: 15,
     onFinish: {
-      unlockTech: ['Metalsmithing II', 'Autonomy I', 'Locomotion'],
-      unlockAction: ['BUILD IRON GEAR', 'BUILD COPPER COIL']
+      unlockTech: ['Metalsmithing II', 'Autonomy I'],
+      unlockAction: ['BUILD IRON GEAR', 'BUILD COPPER COIL'],
     }
   },
   {
@@ -81,13 +81,13 @@ let technologies = [
     name: 'Fuel Efficiency I',
     img: 'fuel-efficiency-i',
     price: {
-      RED_SCIENCE: 20
+      RED_SCIENCE: 10
     },
     locked: 0,
     tooltip: `<h4>FUEL EFFICIENCY I</h4><hr/><p><strong>Cost: 10 red science</strong></p><p><i>Fuel is now 1.5x more efficient</i></p><hr/><p>10 seconds</p>`,
     duration: 20,
     onFinish: {
-      unlockTech: ['Fuel Efficiency II']
+      unlockTech: ['Fuel Efficiency II', 'Locomotion']
     },
     onFinishFunc: () => Game.state.stats.resourceNeededMulti *= .5
   },
@@ -114,7 +114,10 @@ let technologies = [
     locked: 1,
     tooltip: `<h4>LOCOMOTION</h4><hr/><p><strong>Cost: 30 red science</strong></p><p><i>Enables the building of trains (auto-exploration)</i></p><hr/><p>30 seconds</p>`,
     duration: 30,
-    requires: 'Metalsmithing I'
+    requires: 'Metalsmithing I & Fuel Efficiency I',
+    onFinish: {
+      unlockAction: ['BUILD TRAIN']
+    }
   },
   {
     name: 'Enhanced Senses I',
@@ -142,39 +145,29 @@ let technologies = [
     requires: 'Enhanced Senses I'
   },
   {
-    name: 'Intermediate Science',
+    name: 'Science I',
     price: {
       RED_SCIENCE: 100
     },
     img: 'intermediate-science',
     locked: 0,
-    tooltip: `<h4>INTERMEDIATE SCIENCE</h4><hr/><p><strong>Cost: 100 red science</strong></p><p><i>Allows the creation of blue science</i></p><hr/><p>1 minute</p>`,
+    tooltip: `<h4>SCIENCE I</h4><hr/><p><strong>Cost: 100 red science</strong></p><p><i>Allows the creation of blue science</i></p><hr/><p>1 minute</p>`,
     duration: 60,
     onFinish: {
-      unlockTech: ['Advanced Science'],
+      unlockTech: ['SCIENCE II'],
       unlockAction: ['BUILD BLUE SCIENCE']
     }
   },
   {
-    name: 'Advanced Science',
+    name: 'SCIENCE II',
     price: {
       BLUE_SCIENCE: 100
     },
     locked: 1,
-    tooltip: `<h4>ADVANCED SCIENCE</h4><hr/><p><strong>Cost: 100 blue science</strong></p><p><i>Allows the creation of black science</i></p><hr/><p>2 minutes</p>`,
+    tooltip: `<h4>SCIENCE II</h4><hr/><p><strong>Cost: 100 blue science</strong></p><p><i>Allows the creation of black science</i></p><hr/><p>2 minutes</p>`,
     duration: 120,
-    requires: 'Intermediate Science'
+    requires: 'SCIENCE I'
   },
-  // {
-  //   name: 'Rocket Science',
-  //   price: {
-  //     BLACK_SCIENCE: 100
-  //   },
-  //   locked: 1,
-  //   tooltip: `<h4>ROCKET SCIENCE</h4><hr /><p><strong>Cost: 100 black science</strong></p><p><i>Allows the creation of rocket fuel</i></p><hr /><p>5 minutes</p>`,
-  //   duration: 300,
-  //   requires: 'Advanced Science'
-  // }
   {
     name: 'Weightlifting I',
     img: 'weightlifting-i',
@@ -199,14 +192,5 @@ let technologies = [
     duration: 60,
     requires: 'Weightlifting I'
   },
-  {
-    name: 'Steel Processing',
-    price: {
-      price: {
-        RED_SCIENCE: 50
-      }
-    }
-  }
-
 
 ]
