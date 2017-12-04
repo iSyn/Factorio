@@ -587,8 +587,10 @@ Game.launch = () => {
         }
       }
     } else if (Game.state.trains.state == 3) { // UNLOADING/LOADING
-      if (Game.state.previousAction == 1) train.style.left = 100 + "%"
-      if (Game.state.previousAction == 2) train.style.left = 0 + '%'
+      if (Game.state.selectedTab == 'ACTION') {
+        if (Game.state.previousAction == 1) train.style.left = 100 + "%"
+        if (Game.state.previousAction == 2) train.style.left = 0 + '%'
+      }
       Game.state.trains.currentTime -= 30
       if (Game.state.trains.currentTime <= 0) {
         if (Game.state.previousAction == 1) {
