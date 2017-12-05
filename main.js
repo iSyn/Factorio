@@ -36,6 +36,7 @@ Game.launch = () => {
     ironPlate: 0,
     copperCoil: 0,
     ironGear: 0,
+    basicCircuit: 0,
     redScience: 0,
     blueScience: 0,
 
@@ -130,7 +131,7 @@ Game.launch = () => {
       currentFuel: 0,
       maxFuel: 50,
       owned: 0,
-      timeNeeded: 1 * 1000,
+      timeNeeded: 30 * 1000,
       currentTime: 0,
       fuelCounter: 0
     },
@@ -525,6 +526,15 @@ Game.launch = () => {
         <div class="inventory-item">
           <p class="inventory-item-name">IRON GEAR</p>
           <p class='inventory-item-amount'>${Game.state.ironGear}</p>
+        </div>
+      `
+    }
+
+    if (Game.state.basicCircuit > 0) {
+      str += `
+        <div class="inventory-item">
+          <p class="inventory-item-name">BASIC CIRCUIT</p>
+          <p class='inventory-item-amount'>${Game.state.basicCircuit}</p>
         </div>
       `
     }
@@ -1754,8 +1764,14 @@ Game.launch = () => {
 
       // Math.floor(Math.random() * (max - min + 1)) + min
       let selectedAmount = Math.floor(Math.random() * (500 - 10 + 1)) + 10
+      let enhancedSensesTech = select(Game.technologies, 'Enhanced Senses I')
 
-      if (Math.random() >= .3) { // 70% chance
+      if (Math.random() >= .3 || enhancedSensesTech.learned == 1) { // 70% chance
+
+        if (select(Game.technologies, 'Enhanced Senses II').learned == 1) {
+          selectedAmount += selectedAmount/2
+        }
+
         selectedType.amount += selectedAmount
 
         // patch of ...
@@ -1973,6 +1989,14 @@ Game.launch = () => {
     Game.state.constructorInfo.inactive++
 
     Game.addLog('You made a constructor')
+  }
+
+  Game.buildBasicCircuit = () => {
+    Game.state.basicCircuit += 1
+
+    Game.addLog('You made a basic circuit')
+
+    Game.rebuildInventory = 1
   }
 
   Game.addConstructorMaterial = () => {

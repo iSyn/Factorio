@@ -139,11 +139,11 @@ let actions = [
         type: 'ironGear',
         amount: 2,
       }, {
-        type: 'copperCoil',
-        amount: 3
+        type: 'basicCircuit',
+        amount: 2
       }
     ],
-    tooltip: '<p><strong>Cost: 5 iron plates, 2 iron gears, 3 copper coils</strong></p><p><i>Automate the constructing of an item</i></p>',
+    tooltip: '<p><strong>Cost: 5 iron plates, 2 iron gears, 2 basic circuits</strong></p><p><i>Automate the constructing of an item</i></p>',
     onclick: 'buildConstructor',
     locked: 1,
     cooldown: 6
@@ -230,5 +230,22 @@ let actions = [
     onclick: 'buildBlueScience',
     locked: 1,
     duration: 5
-  },
+  }, {
+    name: 'BASIC CIRCUIT',
+    tab: 'BUILD',
+    price: [
+      {
+        type: 'ironPlate',
+        amount: 1
+      }, {
+        type: 'copperCoil',
+        amount: 2
+      }
+    ],
+    tooltip: '<p><strong>Cost: 1 iron plate, 2 copper coils</strong></p><p><i>A basic circuit board</i></p>',
+    onclick: 'buildBasicCircuit',
+    locked: 1,
+    duration: 1,
+    nextLine: true
+  }
 ]

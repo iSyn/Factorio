@@ -35,7 +35,7 @@ let technologies = [
     tooltip: `<h4>METALSMITHING I</h4><hr/><p><strong>Cost: 3 red science</strong></p><p><i>Enables the building of basic metal items</i></p><hr /><p>3 seconds</p>`,
     duration: 15,
     onFinish: {
-      unlockTech: ['Metalsmithing II', 'Autonomy I'],
+      unlockTech: ['Metalsmithing II', 'Autonomy I', 'Circuitry I'],
       unlockAction: ['BUILD IRON GEAR', 'BUILD COPPER COIL'],
     }
   },
@@ -49,6 +49,21 @@ let technologies = [
     tooltip: `<h4>METALSMITHING II</h4><hr/><p><strong>Cost: 100 red science</strong></p><p><i>Enables the building of intermediate metal items</i></p><hr /><p>10 seconds</p>`,
     duration: 10,
     requires: 'Metalsmithing I'
+  },
+  {
+    name: 'Circuitry I',
+    // img:
+    price: {
+      RED_SCIENCE: 5
+    },
+    locked: 1,
+    tooltip: `<h4>CIRCUITRY I</h4><hr /><p><strong>Cost: 5 red science</strong></p><p><i>Enables the building of basic circuit boards</i></p><hr /><p>5 seconds</p>`,
+    duration: 5,
+    requires: 'Metalsmithing I',
+    onFinish: {
+      // unlockTech: ['Circuitry II']
+      unlockAction: ['BUILD BASIC CIRCUIT']
+    }
   },
   {
     name: 'Autonomy I',
@@ -194,6 +209,20 @@ let technologies = [
     tooltip: `<h4>TRAIN SPEED II</h4><hr /><p><strong>Cost: 50 red science, 50 blue science</strong></p><p><i>Furthur increases train speed</i></p><hr /><p>1 minute</p>`,
     duration: 60,
     requires: 'Train Speed I',
+    onFinish: {
+      unlockTech: ['Train Speed III']
+    }
+  },
+  {
+    name: 'Train Speed III',
+    price: {
+      RED_SCIENCE: 300,
+      BLUE_SCIENCE: 300
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN SPEED III</h4><hr /><p><strong>Cost: 300 red science, 300 blue science</strong></p><p><i>Even furthur increases train speed</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Train Speed II',
     onFinish: {}
   },
   {
@@ -255,7 +284,7 @@ let technologies = [
     locked: 1,
     tooltip: `<h4>SCIENCE II</h4><hr/><p><strong>Cost: 100 blue science</strong></p><p><i>Allows the creation of black science</i></p><hr/><p>2 minutes</p>`,
     duration: 120,
-    requires: 'SCIENCE I'
+    requires: 'Science I'
   },
   {
     name: 'Weightlifting I',

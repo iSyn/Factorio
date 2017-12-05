@@ -35,5 +35,20 @@ let recipes = [
         amount: 1
       }
     ]
+  },
+  {
+    name: 'Basic Circuit',
+    itemName: 'basicCircuit',
+    requirements: [
+      {
+        material: 'ironPlate',
+        materialName: 'iron plate',
+        amount: 1
+      }, {
+        material: 'copperCoil',
+        materialName: 'copper coil',
+        amount: 2
+      }
+    ]
   }
 ]
