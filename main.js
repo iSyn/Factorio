@@ -40,8 +40,8 @@ Game.launch = () => {
     blueScience: 0,
 
     worldResources: [
-      {name: 'WOOD', amount: 7000},
-      {name: 'STONE', amount: 7000},
+      {name: 'WOOD', amount: 4000},
+      {name: 'STONE', amount: 4000},
       {name: 'COAL', amount: 0},
       {name: 'COPPER', amount: 0},
       {name: 'IRON', amount: 0},
@@ -127,11 +127,12 @@ Game.launch = () => {
       power: 0,
       state: null, // 1 = going, 2 = coming, 3 = loading/unloading
       previousAction: null,
-      selectedFuel: null,
-      fuelAmount: 0,
+      currentFuel: 0,
+      maxFuel: 50,
       owned: 0,
       timeNeeded: 30 * 1000,
       currentTime: 0,
+      fuelCounter: 0
     },
 
 
@@ -329,6 +330,26 @@ Game.launch = () => {
         }
       }
     }
+
+    // TRAINS
+    if (Game.state.trains.power == 1) {
+      Game.state.trains.fuelCounter++
+      if (Game.state.trains.fuelCounter >= 10) {
+        Game.state.trains.fuelCounter = 0
+        if (Game.state.trains.currentFuel > 1) {
+          Game.state.trains.currentFuel--
+        } else {
+          Game.state.trains.currentFuel--
+          Game.state.trains.power = 0
+          Game.addLog('Your train has run out of fuel')
+        }
+        if (s('.train-info')) {
+          Game.removeWrapper()
+          Game.showTrainInfo()
+        }
+      }
+    }
+
     Game.rebuildInventory = 1
   }
 
@@ -633,24 +654,30 @@ Game.launch = () => {
           }
         }
       }
+    } else {
+      if (Game.state.selectedTab == 'ACTION') {
+        let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
+        train.style.left = position + "%"
+      }
     }
   }
 
-  Game.changeTrainFuel = () => {
-    let selected = s('select').value
-    Game.state.trains.selectedFuel = selected
-  }
-
   Game.toggleTrainPower = (pow) => {
-    if (Game.state.trains.selectedFuel) {
-      Game.removeWrapper()
-      Game.state.trains.power = pow
-      if (!Game.state.trains.state) {
-        Game.state.trains.state = 1
+    if (pow == 1) { // if turning on
+      if (Game.state.trains.currentFuel > 0) {
+        Game.removeWrapper()
+        Game.state.trains.power = pow
+        if (!Game.state.trains.state) {
+          Game.state.trains.state = 1
+        }
+        Game.showTrainInfo()
+      } else {
+        Game.addLog('Fuel is needed to power a train.', 'darkred')
       }
-      Game.showTrainInfo()
     } else {
-      Game.addLog('Select a fuel', 'darkred')
+      Game.state.trains.power = pow
+      Game.removeWrapper()
+      Game.showTrainInfo()
     }
   }
 
@@ -676,42 +703,16 @@ Game.launch = () => {
         str += `<p>Power: <button class='power-btn' onclick='Game.toggleTrainPower(0)'>ON</button></p>`
       }
 
-      // FUEL
-      if (Game.state.trains.selectedFuel == null) {
-        str += `
-          <div class="fuel-container">
-            <p>Fuel: </p>
-            <select onchange='Game.changeTrainFuel()'>
-              <option selected disabled>Select Fuel Type</option>
-              <option value="Wood">Wood</option>
-              <option value="Coal">Coal</option>
-            </select>
-          </div>
-        `
-      } else if (Game.state.trains.selectedFuel == 'Wood') {
-        str += `
-          <div class="fuel-container">
-            <p>Fuel: </p>
-            <select onchange='Game.changeTrainFuel()'>
-              <option disabled>Select Fuel Type</option>
-              <option selected value="Wood">Wood</option>
-              <option value="Coal">Coal</option>
-            </select>
-          </div>
-        `
-      } else if (Game.state.trains.selectedFuel == 'Coal') {
-        str += `
-          <div class="fuel-container">
-            <p>Fuel: </p>
-            <select onchange='Game.changeTrainFuel()'>
-              <option disabled>Select Fuel Type</option>
-              <option value="Wood">Wood</option>
-              <option selected value="Coal">Coal</option>
-            </select>
-          </div>
-        `
-      }
+      str += `<p>Fuel: ${Game.state.trains.currentFuel}/${Game.state.trains.maxFuel}</p>`
 
+      str += `<br/>`
+
+      // str += `<p>Add fuel: </p>`
+      str += `
+        <input style='width: 100%; font-size: xx-large; text-align: center;' type="number" placeholder='Add Fuel'/>
+        <p style='text-align: center; font-size: small;'>1 fuel = 1 coal</p>
+        <button onclick='Game.addFuelTrain()' style='width: 100%; font-size: x-large; position: absolute; bottom: 0px; left: 0px; padding: 20px; cursor: pointer;'>RE FUEL</button>
+      `
 
       str += `</div>`
 
@@ -719,19 +720,48 @@ Game.launch = () => {
     s('body').append(div)
   }
 
+  Game.addFuelTrain = () => {
+    let amount = parseInt(s('input').value)
+    // let currentFuel = Game.state.trains.currentFuel
+    if (amount) {
+      if (Game.state.coal >= amount) {
+        if (amount + Game.state.trains.currentFuel <= Game.state.trains.maxFuel) {
+          Game.state.coal -= amount
+          Game.state.trains.currentFuel += amount
+          Game.addLog(`Added ${amount} fuel`)
+        } else {
+          Game.addLog(`Total exceeds maximum fuel. Adding ${Game.state.trains.maxFuel - Game.state.trains.currentFuel} fuel instead.`)
+          Game.state.coal -= Game.state.trains.maxFuel - Game.state.trains.currentFuel
+          Game.state.trains.currentFuel = Game.state.trains.maxFuel
+        }
+        Game.rebuildInventory = 1
+        Game.removeWrapper()
+        Game.showTrainInfo()
+      } else {
+        Game.addLog('Not enough coal', 'darkred')
+      }
+    }
+  }
+
   Game.showTooltipTrain = () => {
     if (Game.state.trains.state == null) {
       Game.showTooltip('<p>Current Action: Idling</p>')
-    } else if (Game.state.trains.state == 1) {
-      Game.showTooltip('<p>Current Action: Looking for resources</p>')
-    } else if (Game.state.trains.state == 2) {
-      Game.showTooltip('<p>Current Action: Returning information</p>')
-    } else if (Game.state.trains.state == 3) {
-      if (Game.state.trains.previousAction == 1) {
-        Game.showTooltip('<p>Current Action: Storing information</p>')
-      } else {
-        Game.showTooltip('<p>Current Action: Relaying information</p>')
+    }
+
+    if (Game.state.trains.currentFuel > 0) {
+      if (Game.state.trains.state == 1) {
+        Game.showTooltip('<p>Current Action: Looking for resources</p>')
+      } else if (Game.state.trains.state == 2) {
+        Game.showTooltip('<p>Current Action: Returning information</p>')
+      } else if (Game.state.trains.state == 3) {
+        if (Game.state.trains.previousAction == 1) {
+          Game.showTooltip('<p>Current Action: Storing information</p>')
+        } else {
+          Game.showTooltip('<p>Current Action: Relaying information</p>')
+        }
       }
+    } else {
+      Game.showTooltip('<p>Current Action: No Fuel</p>')
     }
   }
 
