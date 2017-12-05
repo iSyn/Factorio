@@ -8,6 +8,20 @@ let select = ((arr, what) => {
 })
 let choose = ((arr) => {return Math.floor(Math.random() * arr.length)})
 
+//https://stackoverflow.com/questions/3369593/how-to-detect-escape-key-press-with-javascript-or-jquery
+document.onkeydown = function(evt) {
+  evt = evt || window.event;
+  var isEscape = false;
+  if ("key" in evt) {
+      isEscape = (evt.key == "Escape" || evt.key == "Esc");
+  } else {
+      isEscape = (evt.keyCode == 27);
+  }
+  if (isEscape) {
+    Game.removeWrapper()
+  }
+};
+
 let Game = {}
 
 Game.launch = () => {
@@ -116,7 +130,7 @@ Game.launch = () => {
       selectedFuel: null,
       fuelAmount: 0,
       owned: 0,
-      timeNeeded: 3 * 1000,
+      timeNeeded: 30 * 1000,
       currentTime: 0,
     },
 
@@ -1109,7 +1123,7 @@ Game.launch = () => {
 
           str += `
             <div class="row">
-              <select id='constructor-materials-1' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(1)'>
+              <select id='constructor-materials-1' style='flex-grow: 1'>
                 <option selected disabled>Select a material</option>
                 <option value="wood">Wood</option>
                 <option value="stone">Stone</option>
@@ -1121,7 +1135,7 @@ Game.launch = () => {
                 <option value="copperCoil">Copper Coil</option>
                 <option value="ironGear">Iron Gear</option>
               </select>
-              <input id='constructor-materials-amount-1' onchange='Game.changeConstructorMaterialAmount(0)' style='width: 40px;' type="number" min='1' max='10'/>
+              <input id='constructor-materials-amount-1' style='width: 40px;' type="number" min='1' max='10'/>
             </div>
           `
 
@@ -1943,7 +1957,7 @@ Game.launch = () => {
 
       s('.constructor-materials-container').innerHTML +=  `
         <div class="row">
-          <select id='constructor-materials-${Game.state.emptyConstructor.materials}' style='flex-grow: 1' onchange='Game.changeConstructorMaterial(${Game.state.emptyConstructor.materials})'>
+          <select id='constructor-materials-${Game.state.emptyConstructor.materials}' style='flex-grow: 1'>
             <option selected disabled>Select a material</option>
             <option value="wood">Wood</option>
             <option value="stone">Stone</option>
@@ -1955,7 +1969,7 @@ Game.launch = () => {
             <option value="copperCoil">Copper Coil</option>
             <option value="ironPlate">Iron Plate</option>
           </select>
-          <input id='constructor-materials-amount-${Game.state.emptyConstructor.materials}' onchange='Game.changeConstructorMaterialAmount(${Game.state.emptyConstructor.materials})' style='width: 40px;' type="number" min='1' max='10'/>
+          <input id='constructor-materials-amount-${Game.state.emptyConstructor.materials}' style='width: 40px;' type="number" min='1' max='10'/>
         </div>
       `
 
@@ -1998,6 +2012,7 @@ Game.launch = () => {
     wrappers.forEach((wrapper) => {
       wrapper.parentNode.removeChild(wrapper)
     })
+    Game.state.emptyConstructor.materials = 1
   }
 
   Game.headerFillers = [

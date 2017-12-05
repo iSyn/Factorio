@@ -54,6 +54,7 @@ footer {
   padding: 5px;
   border-bottom: 6px solid black;
   height: 80px;
+  min-height: 80px;
 }
 
 .page-content-container {
