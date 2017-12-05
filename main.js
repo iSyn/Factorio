@@ -8,17 +8,6 @@ let select = ((arr, what) => {
 })
 let choose = ((arr) => {return Math.floor(Math.random() * arr.length)})
 
-// https://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-function executeFunctionByName(functionName, context /*, args */) {
-    var args = Array.prototype.slice.call(arguments, 2);
-    var namespaces = functionName.split(".");
-    var func = namespaces.pop();
-    for (var i = 0; i < namespaces.length; i++) {
-        context = context[namespaces[i]];
-    }
-    return context[func].apply(context, args);
-}
-
 let Game = {}
 
 Game.launch = () => {
@@ -159,8 +148,8 @@ Game.launch = () => {
 
   Game.load = () => {
 
-    setTimeout(() => {Game.addLog('story', 'Doing things takes time and energy...')}, 1000)
-    setTimeout(() => {Game.addLog('story', 'Why not build things to do the things for you.')}, 3000)
+    setTimeout(() => {Game.addLog('Doing things takes time and energy...', 'olive')}, 1000)
+    setTimeout(() => {Game.addLog('Why not build things to do the things for you.', 'olive')}, 3000)
 
     actions.forEach((action) => {
       new Action(action)
@@ -321,7 +310,7 @@ Game.launch = () => {
             }
             Game.state[itemToConstruct] += resourceGainAmount
           } else {
-            addLog('invalid', 'Not enough resources')
+            addLog('Not enough resources', 'darkred')
           }
         }
       }
@@ -340,7 +329,7 @@ Game.launch = () => {
       }
     } else {
       Game.recalculateRemainingTechDuration = 0
-      Game.addLog('success', `You have completed researching: ${Game.state.tech.currentTech.name}`)
+      Game.addLog(`You have completed researching: ${Game.state.tech.currentTech.name}`)
       Game.playSound('tech-complete')
       let tech = select(Game.technologies, Game.state.tech.currentTech.name)
       tech.learned = 1
@@ -561,46 +550,73 @@ Game.launch = () => {
     }
   }
 
+  Game.trainExplore = () => {
+    let selectedResources = []
+
+    // SELECT THE RESOURCES
+    for (i = 0; i < 3; i++) {
+      let number = choose(Game.state.worldResources)
+      selectedResources.push({
+        name: Game.state.worldResources[number].name,
+        amount: Math.floor(Math.random() * (500 - 100 + 1)) + 100, // random value from 100 - 500
+        index: number
+      })
+    }
+
+    // ADD TO WORLD RESOURCES
+    for (i in selectedResources) {
+      Game.state.worldResources[selectedResources[i].index].amount += selectedResources[i].amount
+    }
+
+    Game.rebuildWorldResources = 1
+  }
+
   Game.trainStuff = () => {
     let train = s('.train')
 
-    if (Game.state.trains.state == 1) { // GOING TO RESOURCES
-      Game.state.trains.currentTime += 30
-      Game.state.previousAction = 1
-      if (Game.state.selectedTab == 'ACTION') {
-        let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
-        train.style.left = position + "%"
-        if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 >= 100) {
-          Game.state.trains.state = 3
-          Game.state.trains.currentTime = 5 * 1000
+    if (Game.state.trains.power == 1) {
+      if (Game.state.trains.state == 1) { // GOING TO RESOURCES
+        Game.state.trains.currentTime += 30
+        Game.state.previousAction = 1
+        if (Game.state.selectedTab == 'ACTION') {
+          let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
+          train.style.left = position + "%"
+          if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 >= 100) {
+            console.log('arrived at resources')
+            Game.state.trains.state = 3
+            Game.state.trains.currentTime = 5 * 1000
+          }
         }
-      }
-    } else if (Game.state.trains.state == 2) { // COMING BACK FROM RESOURCES
-      Game.state.trains.currentTime -= 30
-      Game.state.previousAction = 2
-      if (Game.state.selectedTab == 'ACTION') {
-        let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
-        train.style.left = position + "%"
-        if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 <= 0) {
-          Game.state.trains.state = 3
-          Game.state.trains.currentTime = 5 * 1000
+      } else if (Game.state.trains.state == 2) { // COMING BACK FROM RESOURCES
+        Game.state.trains.currentTime -= 30
+        Game.state.previousAction = 2
+        if (Game.state.selectedTab == 'ACTION') {
+          let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
+          train.style.left = position + "%"
+          if (Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100 <= 0) {
+            console.log('arrived at home')
+            Game.state.trains.state = 3
+            Game.state.trains.currentTime = 5 * 1000
+            // ADD WORLD RESOURCES
+            Game.trainExplore()
+          }
         }
-      }
-    } else if (Game.state.trains.state == 3) { // UNLOADING/LOADING
-      if (Game.state.selectedTab == 'ACTION') {
-        if (Game.state.previousAction == 1) train.style.left = 100 + "%"
-        if (Game.state.previousAction == 2) train.style.left = 0 + '%'
-      }
-      Game.state.trains.currentTime -= 30
-      if (Game.state.trains.currentTime <= 0) {
-        if (Game.state.previousAction == 1) {
-          console.log('heading to home')
-          Game.state.trains.currentTime = Game.state.trains.timeNeeded
-          Game.state.trains.state = 2
-        } else {
-          console.log('heading to resources')
-          Game.state.trains.currentTime = 0
-          Game.state.trains.state = 1
+      } else if (Game.state.trains.state == 3) { // UNLOADING/LOADING
+        if (Game.state.selectedTab == 'ACTION') {
+          if (Game.state.previousAction == 1) train.style.left = 100 + "%"
+          if (Game.state.previousAction == 2) train.style.left = 0 + '%'
+        }
+        Game.state.trains.currentTime -= 30
+        if (Game.state.trains.currentTime <= 0) {
+          if (Game.state.previousAction == 1) {
+            console.log('heading to home')
+            Game.state.trains.currentTime = Game.state.trains.timeNeeded
+            Game.state.trains.state = 2
+          } else {
+            console.log('heading to resources')
+            Game.state.trains.currentTime = 0
+            Game.state.trains.state = 1
+          }
         }
       }
     }
@@ -613,12 +629,14 @@ Game.launch = () => {
 
   Game.toggleTrainPower = (pow) => {
     if (Game.state.trains.selectedFuel) {
+      Game.removeWrapper()
       Game.state.trains.power = pow
       if (!Game.state.trains.state) {
         Game.state.trains.state = 1
       }
+      Game.showTrainInfo()
     } else {
-      Game.addLog('invalid', 'Select a fuel')
+      Game.addLog('Select a fuel', 'darkred')
     }
   }
 
@@ -634,6 +652,7 @@ Game.launch = () => {
           <i onclick='Game.removeWrapper()' style='cursor: pointer;'class='fa fa-times fa-1x'></i>
         </div>
         <hr />
+        <br/>
       `
 
       // POWER
@@ -686,13 +705,29 @@ Game.launch = () => {
     s('body').append(div)
   }
 
+  Game.showTooltipTrain = () => {
+    if (Game.state.trains.state == null) {
+      Game.showTooltip('<p>Current Action: Idling</p>')
+    } else if (Game.state.trains.state == 1) {
+      Game.showTooltip('<p>Current Action: Looking for resources</p>')
+    } else if (Game.state.trains.state == 2) {
+      Game.showTooltip('<p>Current Action: Returning information</p>')
+    } else if (Game.state.trains.state == 3) {
+      if (Game.state.trains.previousAction == 1) {
+        Game.showTooltip('<p>Current Action: Storing information</p>')
+      } else {
+        Game.showTooltip('<p>Current Action: Relaying information</p>')
+      }
+    }
+  }
+
   Game.buildTrains = () => {
     let str = `
       <br/>
       <h3>TRAINS <span style='font-size: small'>owned: ${Game.state.trains.owned}</span></h3>
       <hr/>
       <div class="trains-container">
-        <div onclick='Game.showTrainInfo()' class="train"></div>
+        <div onclick='Game.showTrainInfo()' class="train" onmouseover="Game.showTooltipTrain()" onmouseout='Game.hideTooltip()'></div>
       </div>
     `
     return str
@@ -1012,11 +1047,11 @@ Game.launch = () => {
 
       Game.rebuildSelectedTab = 1
     } else {
-      Game.addLog('invalid', 'Select a fuel type before powering on constructor')
+      Game.addLog('Select a fuel type before powering on constructor', 'darkred')
     }
 
     if (selectedConstructor.active == 0) {
-      Game.addLog('invalid', 'Add some constructors')
+      Game.addLog('Add some constructors', 'darkred')
     }
   }
 
@@ -1120,6 +1155,7 @@ Game.launch = () => {
     }
 
     Game.removeWrapper()
+    Game.state.emptyConstructor.materials=1
 
     let success = false
     let selectedRecipe = {}
@@ -1144,10 +1180,10 @@ Game.launch = () => {
     }
 
     if (success) {
-      Game.addLog('success', `Designated constructor for ${selectedRecipe.name}`)
+      Game.addLog(`Designated constructor for ${selectedRecipe.name}`)
       Game.foundRecipe(selectedRecipe)
     } else {
-      Game.addLog('invalid', 'invalid recipe')
+      Game.addLog('invalid recipe', 'darkred')
     }
   }
 
@@ -1286,7 +1322,7 @@ Game.launch = () => {
         for (i in Game.technologies) {
           if (Game.technologies[i].locked == 1) {
             str += `
-              <div style='background: darkgrey;' class="available-tech" onclick='Game.addLog("invalid", "Tech is locked")' onmouseover='Game.showTooltip("<h4>${Game.technologies[i].name.toUpperCase()}</h4><hr/><p>Requires: ${Game.technologies[i].requires}</p>")' onmouseout='Game.hideTooltip()'></div>
+              <div style='background: darkgrey;' class="available-tech" onclick='Game.addLog("Tech is locked", "darkred")' onmouseover='Game.showTooltip("<h4>${Game.technologies[i].name.toUpperCase()}</h4><hr/><p>Requires: ${Game.technologies[i].requires}</p>")' onmouseout='Game.hideTooltip()'></div>
             `
           }
         }
@@ -1327,11 +1363,11 @@ Game.launch = () => {
 
       Game.rebuildSelectedTab = 1
     } else {
-      Game.addLog('invalid', 'Select a fuel type before powering on furnace')
+      Game.addLog('Select a fuel type before powering on furnace', 'darkred')
     }
 
     if (selectedFurnace.active == 0) {
-      Game.addLog('invalid', 'Add some furnaces')
+      Game.addLog('Add some furnaces', 'darkred')
     }
   }
 
@@ -1343,11 +1379,11 @@ Game.launch = () => {
 
       Game.rebuildSelectedTab = 1
     } else {
-      Game.addLog('invalid', 'Select a fuel type before powering on drill')
+      Game.addLog('Select a fuel type before powering on drill', 'darkred')
     }
 
     if (selectedDrill.active == 0) {
-      Game.addLog('invalid', 'Add some drills')
+      Game.addLog('Add some drills', 'darkred')
     }
   }
 
@@ -1438,7 +1474,7 @@ Game.launch = () => {
           selectedTech.inProgress = true
 
         } else {
-          Game.addLog('invalid', 'You do not have enough red science')
+          Game.addLog('You do not have enough red science', 'darkred')
         }
       } else if (selectedTech.price.RED_SCIENCE && selectedTech.price.BLUE_SCIENCE) {
         if (Game.state.redScience >= selectedTech.price.RED_SCIENCE && Game.state.blueScience >= selectedTech.price.BLUE_SCIENCE) {
@@ -1451,12 +1487,12 @@ Game.launch = () => {
           Game.recalculateRemainingTechDuration = 1
           selectedTech.inProgress = true
         } else {
-          if (Game.state.redScience < selectedTech.price.RED_SCIENCE) Game.addLog('invalid', 'Not enough red science')
-          if (Game.state.blueScience < selectedTech.price.BLUE_SCIENCE) Game.addLog('invalid', 'Not enough blue science')
+          if (Game.state.redScience < selectedTech.price.RED_SCIENCE) Game.addLog('Not enough red science', 'darkred')
+          if (Game.state.blueScience < selectedTech.price.BLUE_SCIENCE) Game.addLog('Not enough blue science', 'darkred')
         }
       }
     } else {
-      Game.addLog('invalid', 'You are already researching something')
+      Game.addLog('You are already researching something', 'darkred')
     }
 
     Game.rebuildSelectedTab = 1
@@ -1481,8 +1517,8 @@ Game.launch = () => {
   Game.unlockWorldResources = () => {
 
 
-    Game.addLog('story', 'Your world has limited resources...')
-    setTimeout(() => {Game.addLog('story', 'Explore your surroundings to find more')}, 2000)
+    Game.addLog('Your world has limited resources...', 'olive')
+    setTimeout(() => {Game.addLog('Explore your surroundings to find more', 'olive')}, 2000)
 
     let el = s('.page-content-left')
 
@@ -1582,7 +1618,7 @@ Game.launch = () => {
 
       Game.rebuildInventory = 1
     } else {
-      Game.addLog('invalid', 'You are missing some resources')
+      Game.addLog('You are missing some resources', 'darkred')
     }
   }
 
@@ -1659,15 +1695,15 @@ Game.launch = () => {
     if (Game.state.stats.exploreCount == 1) {
       Game.state.worldResources[2].amount += 5000 // Add a bunch of starting coal
       select(Game.actions, 'MINE COAL').locked = 0
-      Game.addLog('success', 'You have discovered COAL!')
+      Game.addLog('You have discovered COAL!')
     } else if (Game.state.stats.exploreCount == 2) {
       Game.state.worldResources[3].amount += 3000 // Add a bunch of starting copper
       select(Game.actions, 'MINE COPPER').locked = 0
-      Game.addLog('success', 'You have discovered COPPER!')
+      Game.addLog('You have discovered COPPER!')
     } else if (Game.state.stats.exploreCount == 3) {
       Game.state.worldResources[4].amount += 3000 // Add a bunch of starting iron
       select(Game.actions, 'MINE IRON').locked = 0
-      Game.addLog('success', 'You have discovered IRON!')
+      Game.addLog('You have discovered IRON!')
     } else {
 
       let selectedType = Game.state.worldResources[choose(Game.state.worldResources)]
@@ -1692,13 +1728,13 @@ Game.launch = () => {
         if (selectedAmount >= 400) selectedArr = gigantic
 
         if (selectedType.name == 'WOOD') {
-          Game.addLog(null, `You find ${selectedAmount} wood`)
+          Game.addLog(`You find ${selectedAmount} wood`)
         } else {
-          Game.addLog(null, `You find ${selectedArr[choose(selectedArr)]} ${selectedAmount} ${selectedType.name.toLowerCase()}`)
+          Game.addLog(`You find ${selectedArr[choose(selectedArr)]} ${selectedAmount} ${selectedType.name.toLowerCase()}`)
         }
 
       } else {
-        Game.addLog(null, 'You explore your surroundings but found nothing notable.')
+        Game.addLog('You explore your surroundings but found nothing notable.')
       }
     }
     Game.rebuildWorldResources = 1
@@ -1717,7 +1753,7 @@ Game.launch = () => {
       Game.earn('wood', amount)
     }
 
-    Game.addLog('wood', amount)
+    Game.addLog(`You chopped ${amount} wood`)
   }
 
   Game.mineRock = () => {
@@ -1731,8 +1767,7 @@ Game.launch = () => {
       amount = Game.state.worldResources[1].amount
       Game.earn('stone', amount)
     }
-
-    Game.addLog('mine', amount)
+    Game.addLog(`You mined ${amount} stone`)
   }
 
   Game.mineCoal = () => {
@@ -1745,7 +1780,7 @@ Game.launch = () => {
       Game.earn('coal', amount)
     }
 
-    Game.addLog('mine', amount)
+    Game.addLog(`You mined ${amount} coal`)
   }
 
   Game.mineCopper = () => {
@@ -1758,7 +1793,7 @@ Game.launch = () => {
       Game.earn('copper', amount)
     }
 
-    Game.addLog('mine', amount)
+    Game.addLog(`You mined ${amount} copper`)
   }
 
   Game.mineIron = () => {
@@ -1771,7 +1806,7 @@ Game.launch = () => {
       Game.earn('iron', amount)
     }
 
-    Game.addLog('mine', amount)
+    Game.addLog(`You mined ${amount} iron`)
   }
 
   Game.burnWood = () => {
@@ -1781,7 +1816,7 @@ Game.launch = () => {
 
       Game.rebuildInventory = 1
     } else {
-      Game.addLog('invalid', 'Not enough resources')
+      Game.addLog('Not enough resources', 'darkred')
     }
   }
 
@@ -1792,7 +1827,7 @@ Game.launch = () => {
 
       Game.rebuildInventory = 1
     } else {
-      Game.addLog('invalid', 'Not enough resources')
+      Game.addLog('Not enough resources', 'darkred')
     }
   }
 
@@ -1803,7 +1838,7 @@ Game.launch = () => {
 
       Game.rebuildInventory = 1
     } else {
-      Game.addLog('invalid', 'Not enough resources')
+      Game.addLog('Not enough resources', 'darkred')
     }
   }
 
@@ -1812,14 +1847,14 @@ Game.launch = () => {
     Game.state.miningDrillsInfo.inactive++
     Game.state.stats.totalBuildsManuallyFired++
     Game.rebuildSelectedTab = 1
-    Game.addLog('craft', 'mining drill')
+    Game.addLog('You crafted a mining drill')
   }
 
   Game.buildFurnace = () => {
     Game.state.furnacesInfo.owned++
     Game.state.furnacesInfo.inactive++
     Game.state.stats.totalBuildsManuallyFired++
-    Game.addLog('craft', 'furnace')
+    Game.addLog('You crafted a furnace')
 
     // UNLOCK NEW BUTTONS
     if (select(Game.actions, "BURN WOOD").locked == 1) {
@@ -1835,7 +1870,7 @@ Game.launch = () => {
     Game.state.redScience++
     Game.state.stats.totalBuildsManuallyFired++
 
-    Game.addLog('success', 'You crafted a red science')
+    Game.addLog('You crafted a red science')
 
     Game.rebuildInventory = 1
   }
@@ -1844,7 +1879,7 @@ Game.launch = () => {
     Game.state.blueScience++
     Game.state.stats.totalBuildsManuallyFired++
 
-    Game.addLog('success', 'You crafted a blue science')
+    Game.addLog('You crafted a blue science')
 
     Game.rebuildInventory = 1
   }
@@ -1857,7 +1892,7 @@ Game.launch = () => {
     if (redScience.locked == 1) redScience.locked = 0
 
     Game.rebuildSelectedTab = 1
-    Game.addLog('craft', 'lab')
+    Game.addLog('You crafted a lab')
 
     if (Game.state.tabs[2].locked == true) {
       Game.state.tabs[2].locked = false
@@ -1868,7 +1903,7 @@ Game.launch = () => {
   Game.buildTrain = () => {
     Game.state.trains.owned++
 
-    Game.addLog('success', 'You made a train')
+    Game.addLog('You made a train')
 
     Game.rebuildInventory = 1
   }
@@ -1876,7 +1911,7 @@ Game.launch = () => {
   Game.buildIronGear = () => {
     Game.state.ironGear++
 
-    Game.addLog('success', 'You made an iron gear')
+    Game.addLog('You made an iron gear')
 
     Game.rebuildInventory = 1
   }
@@ -1884,7 +1919,7 @@ Game.launch = () => {
   Game.buildCopperCoil = () => {
     Game.state.copperCoil += 1
 
-    Game.addLog('success', 'You crafted a copper coil')
+    Game.addLog('You crafted a copper coil')
 
     Game.rebuildInventory = 1
   }
@@ -1893,7 +1928,7 @@ Game.launch = () => {
     Game.state.constructorInfo.owned++
     Game.state.constructorInfo.inactive++
 
-    Game.addLog('success', 'You made a constructor')
+    Game.addLog('You made a constructor')
   }
 
   Game.addConstructorMaterial = () => {
@@ -1928,32 +1963,17 @@ Game.launch = () => {
       s(`#constructor-materials-amount-1`).value = firstValueAmount
       if (secondValue) {s(`#constructor-materials-2`).value = secondValue; s(`#constructor-materials-amount-2`).value = secondValueAmount}
     } else {
-      Game.addLog('invalid', 'You can only have a max of 2 materials')
+      Game.addLog('You can only have a max of 2 materials', 'darkred')
     }
   }
 
-  Game.addLog = (type, amount) => {
+  Game.addLog = (txt, txtColor) => {
     let newLog = document.createElement('p')
     newLog.classList.add('log')
 
-    if (type == 'mine') {
-      let words = ['excavated', 'mined', 'smashed', 'got']
-      newLog.innerHTML = `<p>You ${words[choose(words)]} ${amount} stones</p>`
-    } else if (type == 'wood') {
-      let words = ['chopped', 'harvested', 'cut', 'cut down']
-      newLog.innerHTML = `<p>You ${words[choose(words)]} ${amount} wood</p>`
-    } else if (type == 'invalid') {
-      newLog.innerHTML = `<p style='color: firebrick'>${amount}</p>`
-    } else if (type == 'story') {
-      newLog.innerHTML = `<p><i style='color: slateblue;'>${amount}</i></p>`
-    } else if (type == 'craft') {
-      let words = ['created', 'crafted', 'made']
-      newLog.innerHTML = `<p style='color: darkgreen'>You ${words[choose(words)]} 1 ${amount}</p>`
-    } else if (type == 'success') {
-      newLog.innerHTML = `<p style='color: darkgreen'>${amount}</p>`
-    }else {
-      newLog.innerHTML = amount
-    }
+    newLog.innerHTML = txt
+
+    if (txtColor) newLog.style.color = txtColor
 
     s('.logs-container').prepend(newLog)
 
@@ -2051,7 +2071,7 @@ Game.launch = () => {
   s('header').onclick = () => {
     clickCounter++
     if (clickCounter > 7) {
-      Game.addLog('success', 'CHEATS ENABLED')
+      Game.addLog('CHEATS ENABLED')
       Game.state.wood += 200
       Game.state.stone += 200
       Game.state.iron += 200

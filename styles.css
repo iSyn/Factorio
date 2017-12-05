@@ -53,6 +53,7 @@ footer {
   font-size: x-large;
   padding: 5px;
   border-bottom: 6px solid black;
+  height: 80px;
 }
 
 .page-content-container {
