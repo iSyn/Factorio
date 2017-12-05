@@ -177,23 +177,17 @@ let actions = [
     tab: 'BUILD',
     price: [
       {
-        type: 'copperPlate',
-        amount: 20
-      }, {
         type: 'ironPlate',
         amount: 20
       }, {
         type: 'ironGear',
         amount: 10
       }, {
-        type: 'copperCoil',
+        type: 'basicCircuit',
         amount: 10
-      }, {
-        type: 'blueScience',
-        amount: 1
       }
     ],
-    tooltip: '<p><strong>Cost: 20 copper plates, 20 iron plates, 10 iron gears, 10 copper coils, 1 blue science</strong></p><p><i>Allows for semi-automatic exploration</i></p>',
+    tooltip: '<p><strong>Cost: 20 iron plates, 10 iron gears, 10 basic circuits</strong></p><p><i>Allows for semi-automatic exploration</i></p>',
     onclick: 'buildTrain',
     locked: 1,
     nextLine: true,
