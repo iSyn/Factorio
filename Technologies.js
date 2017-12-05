@@ -104,6 +104,11 @@ let technologies = [
     requires: 'Fuel Efficiency I',
     onFinishFunc: () => Game.state.stats.resourceNeededMulti *= .5
   },
+  /*  ///////////////////////////////////////////////////////////////////
+
+      TRAIN STUFF
+
+  */  ///////////////////////////////////////////////////////////////////
   {
     name: 'Locomotion',
     desc: 'Enables the building of trains',
@@ -116,8 +121,92 @@ let technologies = [
     duration: 30,
     requires: 'Metalsmithing I & Fuel Efficiency I',
     onFinish: {
+      unlockTech: ['Train Tank Capacity I', 'Train Speed I', 'Train Fuel Efficiency I'],
       unlockAction: ['BUILD TRAIN']
     }
+  },
+  {
+    name: 'Train Tank Capacity I',
+    // img:
+    price: {
+      RED_SCIENCE: 10,
+      BLUE_SCIENCE: 10
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN TANK CAPACITY I</h4><hr /><p><strong>Cost: 10 red science, 10 blue science</strong></p><p><i>Increases tank capacity by 50</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Locomotion',
+    onFinish: {
+      unlockTech: ['Train Tank Capacity II']
+    },
+    onFinishFunc: () => Game.state.trains.maxFuel += 50
+  },
+  {
+    name: 'Train Tank Capacity II',
+    // img:
+    price: {
+      RED_SCIENCE: 70,
+      BLUE_SCIENCE: 70
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN TANK CAPACITY II</h4><hr /><p><strong>Cost: 70 red science, 70 blue science</strong></p><p><i>Increases tank capacity by 50</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Train Tank Capacity I',
+    onFinish: {
+      unlockTech: ['Train Tank Capacity III']
+    },
+    onFinishFunc: () => Game.state.trains.maxFuel += 50
+  },
+  {
+    name: 'Train Tank Capacity III',
+    // img:
+    price: {
+      RED_SCIENCE: 300,
+      BLUE_SCIENCE: 300
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN TANK CAPACITY III</h4><hr /><p><strong>Cost: 300 red science, 300 blue science</strong></p><p><i>Increases tank capacity by 100</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Train Tank Capacity II',
+    onFinishFunc: () => Game.state.trains.maxFuel += 100
+  },
+  {
+    name: 'Train Speed I',
+    price: {
+      RED_SCIENCE: 10,
+      BLUE_SCIENCE: 10
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN SPEED I</h4><hr /><p><strong>Cost: 10 red science, 10 blue science</strong></p><p><i>Increase train speed</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Locomotion',
+    onFinish: {
+      unlockTech: ['Train Speed II']
+    }
+  },
+  {
+    name: 'Train Speed II',
+    price: {
+      RED_SCIENCE: 50,
+      BLUE_SCIENCE: 50
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN SPEED II</h4><hr /><p><strong>Cost: 50 red science, 50 blue science</strong></p><p><i>Furthur increases train speed</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Train Speed I',
+    onFinish: {}
+  },
+  {
+    name: 'Train Fuel Efficiency I',
+    price: {
+      RED_SCIENCE: 10,
+      BLUE_SCIENCE: 20
+    },
+    locked: 1,
+    tooltip: `<h4>TRAIN FUEL EFFICIENCY I</h4><hr /><p><strong>Cost: 10 red science, 20 blue science</strong></p><p><i>Lowers the cost of fuel needed</i></p><hr /><p>1 minute</p>`,
+    duration: 60,
+    requires: 'Locomotion',
+    onFinish: {}
   },
   {
     name: 'Enhanced Senses I',

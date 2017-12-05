@@ -130,7 +130,7 @@ Game.launch = () => {
       currentFuel: 0,
       maxFuel: 50,
       owned: 0,
-      timeNeeded: 30 * 1000,
+      timeNeeded: 1 * 1000,
       currentTime: 0,
       fuelCounter: 0
     },
@@ -591,9 +591,12 @@ Game.launch = () => {
     // SELECT THE RESOURCES
     for (i = 0; i < 3; i++) {
       let number = choose(Game.state.worldResources)
+      let amount = Math.floor(Math.random() * (500 - 100 + 1)) + 100
+      amount += Math.ceil(Game.state.trains.owned * .05 * amount)
+
       selectedResources.push({
         name: Game.state.worldResources[number].name,
-        amount: Math.floor(Math.random() * (500 - 100 + 1)) + 100, // random value from 100 - 500
+        amount: amount,
         index: number
       })
     }
@@ -601,6 +604,7 @@ Game.launch = () => {
     // ADD TO WORLD RESOURCES
     for (i in selectedResources) {
       Game.state.worldResources[selectedResources[i].index].amount += selectedResources[i].amount
+      Game.addLog(`Your train found the location of ${selectedResources[i].amount} ${Game.state.worldResources[selectedResources[i].index].name.toLowerCase()}`)
     }
 
     Game.rebuildWorldResources = 1
@@ -612,7 +616,7 @@ Game.launch = () => {
     if (Game.state.trains.power == 1) {
       if (Game.state.trains.state == 1) { // GOING TO RESOURCES
         Game.state.trains.currentTime += 30
-        Game.state.previousAction = 1
+        Game.state.trains.previousAction = 1
         if (Game.state.selectedTab == 'ACTION') {
           let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
           train.style.left = position + "%"
@@ -624,7 +628,7 @@ Game.launch = () => {
         }
       } else if (Game.state.trains.state == 2) { // COMING BACK FROM RESOURCES
         Game.state.trains.currentTime -= 30
-        Game.state.previousAction = 2
+        Game.state.trains.previousAction = 2
         if (Game.state.selectedTab == 'ACTION') {
           let position = Game.state.trains.currentTime/Game.state.trains.timeNeeded * 100
           train.style.left = position + "%"
@@ -638,12 +642,12 @@ Game.launch = () => {
         }
       } else if (Game.state.trains.state == 3) { // UNLOADING/LOADING
         if (Game.state.selectedTab == 'ACTION') {
-          if (Game.state.previousAction == 1) train.style.left = 100 + "%"
-          if (Game.state.previousAction == 2) train.style.left = 0 + '%'
+          if (Game.state.trains.previousAction == 1) train.style.left = 100 + "%"
+          if (Game.state.trains.previousAction == 2) train.style.left = 0 + '%'
         }
         Game.state.trains.currentTime -= 30
         if (Game.state.trains.currentTime <= 0) {
-          if (Game.state.previousAction == 1) {
+          if (Game.state.trains.previousAction == 1) {
             console.log('heading to home')
             Game.state.trains.currentTime = Game.state.trains.timeNeeded
             Game.state.trains.state = 2
@@ -744,24 +748,20 @@ Game.launch = () => {
   }
 
   Game.showTooltipTrain = () => {
-    if (Game.state.trains.state == null) {
-      Game.showTooltip('<p>Current Action: Idling</p>')
-    }
-
-    if (Game.state.trains.currentFuel > 0) {
-      if (Game.state.trains.state == 1) {
-        Game.showTooltip('<p>Current Action: Looking for resources</p>')
-      } else if (Game.state.trains.state == 2) {
-        Game.showTooltip('<p>Current Action: Returning information</p>')
-      } else if (Game.state.trains.state == 3) {
-        if (Game.state.trains.previousAction == 1) {
-          Game.showTooltip('<p>Current Action: Storing information</p>')
-        } else {
-          Game.showTooltip('<p>Current Action: Relaying information</p>')
-        }
-      }
+    if (Game.state.trains.fuel <= 0) {
+      Game.showTooltip('Current Action: No Fuel')
     } else {
-      Game.showTooltip('<p>Current Action: No Fuel</p>')
+      if (Game.state.trains.state == 3) {
+        if (Game.state.trains.previousAction == 1) { // was going to resources
+          Game.showTooltip('Current Action: Found resources')
+        } else {
+          Game.showTooltip('Current Action: Reporting information')
+        }
+      } else if (Game.state.trains.state == 1) {
+        Game.showTooltip('Current Action: Looking for resources')
+      } else if (Game.state.trains.state == 2) {
+        Game.showTooltip('Current Action: Heading home')
+      }
     }
   }
 
